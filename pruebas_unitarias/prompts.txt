@@ -1,0 +1,28 @@
+---- Zonas -----
+Con base en el archivo @/puebas_unitarias/cp_zonas.txt, crea un archivo que implemente pruebas unitarias Junit que permitan probar desde un punto de vista REST, no desde servicios. 
+Considera los siguientes aspectos:
+- Como los endpoints están protegidos por JWT, puedes trabajar con un mock que cuente con los permisos necesarios, para que el control pase. Revisa los archivos de controladores en @ModuloZonas/src/main/java/ec/edu/espe/zonas/controladores y la configuración de seguridad en @ModuloZonas/src/main/java/ec/edu/espe/zonas/infrastructure/security/SecurityConfig.java para tener un panorama completo de como funcionan los flujos de autorización.
+- Puedes guiarte por los archivos de dto en la carpeta @ModuloZonas/src/main/java/ec/edu/espe/zonas/datos/dtos, los archivos de entidad en @ModuloZonas/src/main/java/ec/edu/espe/zonas/dominio/entidades y por los servicios en la carpeta @ModuloZonas/src/main/java/ec/edu/espe/zonas/servicios/implementacion para entender las validaciones, mensajes de error y lógica que manejan, pero no puedes modificarlos. 
+- Puedes usar funciones que llamen a los servicios para acciones que formen parte de las verificaciones o Precondiciones, como crear zonas o hacer una búsqueda.
+- Si es necesario agregar dependencias al @ModuloZonas/pom.xml puedes hacerlo, pero no puedes manipular dependencias ya existentes. Tampoco puedes modificar otros archivos fuera de la carpeta @ModuloZonas/src/test/java/ec/edu/espe/zonas sin permiso. Si lo consideras necesario, indícame la razón y yo revisaré antes de autorizarlo.
+- Para las pruebas se necesita de una base de datos en postgresql, puedes usar el archivo @docker-compose.yml para levantar la base de datos db-zonas y realizar las pruebas. Solo puedes levantar esta base de datos de todo el archivo. 
+- No olvides incluir los casos adicionales o sub-casos de prueba. 
+
+
+Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes forzar a que pasen, solo comunícamelas. En caso de errores causados por dependencias,  compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
+
+Dado que ya existen archivos de pruebas unitarias en @ModuloZonas/src/test/java/ec/edu/espe/zonas/controladores puedes evaluar los casos de prueba ya existentes para no realizar el trabajo de nuevo, junta los que sean apropiados en un solo documento y completa los que falten. 
+
+-----Espacios------
+Con base en el archivo @/puebas_unitarias/cp_espacios.txt, crea un archivo que implemente pruebas unitarias Junit que permitan probar desde un punto de vista REST, no desde servicios. 
+Considera los siguientes aspectos:
+- Como los endpoints están protegidos por JWT, puedes trabajar con un mock que cuente con los permisos necesarios, para que el control pase. Revisa los archivos de controladores en @ModuloZonas/src/main/java/ec/edu/espe/zonas/controladores y la configuración de seguridad en @ModuloZonas/src/main/java/ec/edu/espe/zonas/infrastructure/security/SecurityConfig.java para tener un panorama completo de como funcionan los flujos de autorización.
+- Puedes guiarte por los archivos de dto en la carpeta @ModuloZonas/src/main/java/ec/edu/espe/zonas/datos/dtos, los archivos de entidad en @ModuloZonas/src/main/java/ec/edu/espe/zonas/dominio/entidades y por los servicios en la carpeta @ModuloZonas/src/main/java/ec/edu/espe/zonas/servicios/implementacion para entender las validaciones, mensajes de error y lógica que manejan, pero no puedes modificarlos. 
+- Puedes usar funciones que llamen a los servicios para acciones que formen parte de las verificaciones o Precondiciones, como crear zonas, espacios o hacer una búsqueda.
+- Si es necesario agregar dependencias al @ModuloZonas/pom.xml puedes hacerlo, pero no puedes manipular dependencias ya existentes. Tampoco puedes modificar otros archivos fuera de la carpeta @ModuloZonas/src/test/java/ec/edu/espe/zonas sin permiso. Si lo consideras necesario, indícame la razón y yo revisaré antes de autorizarlo. Si detectas un cambio que no hayas realizado, es un cambio hecho por mí, entonces no debes quitarlo.
+- Para las pruebas se necesita de una base de datos en postgresql, puedes usar el archivo @docker-compose.yml para levantar la base de datos db-zonas y realizar las pruebas. Solo puedes levantar esta base de datos de todo el archivo. 
+- No olvides incluir los casos adicionales o sub-casos de prueba, se escriben con la palabra clave "CP". 
+
+Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes forzar a que pasen, solo comunícamelas. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
+
+Es importante que recuerdes que estas pruebas están orientadas a la entidad Espacio, por lo que al mencionar estados y tipos en los casos de prueba, siempre serán de espacios, no de zonas. 

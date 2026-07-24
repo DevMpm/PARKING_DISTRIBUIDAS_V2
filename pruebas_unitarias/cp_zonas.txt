@@ -1,0 +1,128 @@
+Crear Zona
+CP1. Crear una zona con datos correctos.
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con datos válidos
+Verificar: 
+1. Código de respuesta 201
+2. Respuesta DTO con datos correctos.
+3. Verificar formato del código de la zona.
+3. Buscar zona y encontrar que existe.
+
+CP2. (Caso adicional, zona con datos correctos y tipo en minúsculas)
+
+CP3. Crear zona con datos incorrectos. 
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con datos inválidos (4 casos separados. CP3.1-CP3.4)
+- Nombre inválido
+- Nombre duplicado
+- Tipo inválido
+- Capacidad invalida
+Verificar:
+1. Códigos de respuesta 400 o 409 en el caso del duplicado
+2. Mensajes de error
+3. Buscar zona y no encontrar.
+
+Obtener zonas
+
+CP4. Obtener zonas normal 
+Precondiciones: Token JWT con roles suficientes y 4 zonas creadas.
+Entrada: Ninguna
+Verificar: 
+1. Código de respuesta 201
+2. Cantidad de registros en el array.
+
+CP4.1 Obtener zonas desocupadas si hay
+Precondiciones: Token JWT con roles suficientes y 4 zonas creadas cada una con 1 espacio. 
+2 zonas deben tener sus espacios ocupados.
+Entrada: Ninguna
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros en el array.
+3. Verificar los espacios desocupados en las zonas de respuesta.
+
+CP4.2 Obtener zonas desocupadas si no hay
+Precondiciones: Token JWT con roles suficientes y 4 zonas creadas cada una con 1 espacio. 
+Todas deben tener sus espacios ocupados
+Entrada: Ninguna
+Verificar:
+1. Código de respuesta 404
+2. Cantidad de registros en el array.
+
+CP5-CP9. Obtener zonas por tipo
+Precondiciones: Token JWT con roles suficientes y 1 zona creada por cada tipo. 
+Entrada: Ninguna
+- Tipo de zona como parámetro
+Verificar:
+1. Cantidad de resultados de cada búsqueda
+2. Código de la zona obtenida (Debe coincidir con el tipo buscado)
+
+Actualizar zonas
+CP10.1 Actualizar descripcion
+Precondiciones: Token JWT con roles suficientes y 1 zona creada.
+Entrada: DTO con datos para cambiar la descripcion. UUID de la zona a cambiar como parámetro
+Verificar:
+1. Codigo de respuesta 200
+2. DTO de respuesta con datos actualizados
+3. Buscar zonas y verificar los cambios.
+
+CP10.2 Igual al caso anterior pero se cambia la entrada para usar valor inválido en descripción
+Verificar:
+1. Codigo de respuesta 400
+2. Buscar zonas y verificar que no se cambió la descripción.
+
+CP11.1 Actualizar capacidad
+Precondiciones: Token JWT con roles suficientes y 1 zona creada.
+Entrada: DTO con datos para cambiar la capacidad. UUID de la zona a cambiar como parámetro
+Verificar:
+1. Codigo de respuesta 200
+2. DTO de respuesta con datos actualizados
+3. Buscar zonas y verificar los cambios.
+
+CP11.2 Igual al caso anterior pero se cambia la entrada para usar valor inválido en capacidad
+Verificar:
+1. Codigo de respuesta 400
+2. Buscar zonas y verificar que no se cambió la capacidad.
+
+CP12.1 Actualizar tipo
+Precondiciones: Token JWT con roles suficientes y 1 zona creada.
+Entrada: DTO con datos para cambiar el tipo. UUID de la zona a cambiar como parámetro
+Verificar:
+1. Codigo de respuesta 200
+2. DTO de respuesta con datos actualizados
+3. Buscar zonas y verificar los cambios.
+
+CP12.2 Igual al caso anterior pero se cambia la entrada para usar valor inválido en capazidad
+Verificar:
+1. Codigo de respuesta 400
+2. Buscar zonas y verificar que no se cambió el tipo
+
+CP13.1 Actualizar Estado (Desactivar)
+Precondiciones: Token JWT con roles suficientes y 1 zona creada con 2 espacios.
+Entrada: DTO con datos para cambiar el estado a desactivado. UUID de la zona a cambiar como parámetro
+Verificar:
+1. Codigo de respuesta 200
+2. DTO de respuesta con datos actualizados
+3. Buscar zonas y verificar los cambios.
+4. Buscar los espacios de la zona y verificar el cambio de estado.
+
+CP13.2 Usa los datos de la zona desactivada para reactivarla.
+Verificar:
+1. Codigo de respuesta 200
+2. DTO de respuesta con datos actualizados
+3. Buscar zonas y verificar los cambios.
+4. Buscar los espacios de la zona y verificar que su estado no se ha cambiado.
+
+CP14.1 Activar/Desactivar Zona
+Precondiciones: Token JWT con roles suficientes y 1 zona creada con 2 espacios.
+Entrada: UUID de la zona a cambiar como parámetro
+Verificar:
+1. Codigo de respuesta 200
+2. DTO de respuesta con datos actualizados
+3. Buscar zonas y verificar los cambios.
+4. Buscar los espacios de la zona y verificar el cambio de estado.
+
+CP14.2 Usa los datos de la zona desactivada para reactivarla.
+1. Codigo de respuesta 200
+2. DTO de respuesta con datos actualizados
+3. Buscar zonas y verificar los cambios.
+4. Buscar los espacios de la zona y verificar que su estado no se ha cambiado.@

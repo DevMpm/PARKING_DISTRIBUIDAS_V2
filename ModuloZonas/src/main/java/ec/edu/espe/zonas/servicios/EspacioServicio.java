@@ -1,6 +1,7 @@
 package ec.edu.espe.zonas.servicios;
 
 import ec.edu.espe.zonas.datos.dtos.EspacioRequestDTO;
+import ec.edu.espe.zonas.datos.dtos.EspacioUpdateRequestDTO;
 import ec.edu.espe.zonas.datos.dtos.EspacioResponseDTO;
 import ec.edu.espe.zonas.dominio.entidades.EstadoEspacio;
 
@@ -15,7 +16,7 @@ public interface EspacioServicio {
 
     EspacioResponseDTO crearEspacio(EspacioRequestDTO request);
 
-    EspacioResponseDTO actualizarEspacio(UUID idEspacio, EspacioRequestDTO request);
+    EspacioResponseDTO actualizarEspacio(UUID idEspacio, EspacioUpdateRequestDTO request);
 
     void eliminarEspacio(UUID idEspacio);
 

@@ -4,3 +4,5 @@ venv/
 /node_modules/
 /.vscode/
 /.claude/
+### Open Code ####
+AGENTS.md
