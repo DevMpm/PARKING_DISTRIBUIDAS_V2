@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Permission } from './entities/permission.entity';
 import { CreatePermissionDto, UpdatePermissionDto } from './dto/permission.dto';
+import { resolveServiceForPermission } from './service-catalog';
 
 @Injectable()
 export class PermissionsService {
@@ -16,7 +17,9 @@ export class PermissionsService {
     if (existing) {
       throw new ConflictException(`El permiso con nombre "${dto.name}" ya existe`);
     }
-    const permission = this.permissionRepository.create(dto);
+    // Si no se especifica el servicio, se deriva del prefijo del nombre del permiso.
+    const service = dto.service ?? resolveServiceForPermission(dto.name);
+    const permission = this.permissionRepository.create({ ...dto, service });
     return this.permissionRepository.save(permission);
   }
 

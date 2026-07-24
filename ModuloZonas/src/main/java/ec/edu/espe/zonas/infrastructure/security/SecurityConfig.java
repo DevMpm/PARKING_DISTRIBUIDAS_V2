@@ -5,14 +5,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity(debug = true)
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    private final PermissionsCacheService permissionsCacheService;
+
+    public SecurityConfig(PermissionsCacheService permissionsCacheService) {
+        this.permissionsCacheService = permissionsCacheService;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,14 +47,32 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Autorización PULL: en vez de leer las authorities del claim `permissions` del
+     * token, se toma el rol único (`role`) y se resuelven sus permisos para este
+     * servicio vía PermissionsCacheService (caché + gestion-usuarios).
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthConverter() {
-        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        authoritiesConverter.setAuthoritiesClaimName("permissions");
-        authoritiesConverter.setAuthorityPrefix("");
-
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
+        converter.setJwtGrantedAuthoritiesConverter(this::authoritiesFromRole);
         return converter;
+    }
+
+    private Collection<GrantedAuthority> authoritiesFromRole(Jwt jwt) {
+        String role = jwt.getClaimAsString("role");
+        if (role == null) {
+            // Compat con tokens antiguos que traían la lista `roles`
+            List<String> roles = jwt.getClaimAsStringList("roles");
+            if (roles != null && !roles.isEmpty()) {
+                role = roles.get(0);
+            }
+        }
+        if (role == null) {
+            return List.of();
+        }
+        return permissionsCacheService.getPermissions(role).stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
     }
 }

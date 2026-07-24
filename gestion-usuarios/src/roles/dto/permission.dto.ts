@@ -19,6 +19,17 @@ export class CreatePermissionDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @ApiProperty({
+    description:
+      'Microservicio dueño del permiso. Si se omite, se deriva del prefijo del nombre.',
+    example: 'usuarios-service',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  service?: string;
 }
 
 export class UpdatePermissionDto extends PartialType(CreatePermissionDto) {}

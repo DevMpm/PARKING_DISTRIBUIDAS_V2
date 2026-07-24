@@ -1,17 +1,18 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
+/**
+ * Guard que acepta ÚNICAMENTE tokens de tipo 'pre-auth'.
+ * Se usa en el endpoint de selección de rol.
+ */
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
+export class PreAuthGuard extends AuthGuard('jwt') {
   handleRequest(err: any, user: any) {
     if (err || !user) {
       throw err || new UnauthorizedException('Token inválido o ausente');
     }
-    // Un token 'pre-auth' solo sirve para elegir rol, no para operar.
-    if (user.type === 'pre-auth') {
-      throw new UnauthorizedException(
-        'Token pre-auth no válido para esta operación; selecciona un rol primero',
-      );
+    if (user.type !== 'pre-auth') {
+      throw new UnauthorizedException('Se requiere un token pre-auth');
     }
     return user;
   }

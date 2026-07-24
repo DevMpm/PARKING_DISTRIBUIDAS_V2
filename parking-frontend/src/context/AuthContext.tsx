@@ -7,13 +7,19 @@ interface AuthState {
   user: UserPayload | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  // Devuelve true si el usuario debe seleccionar rol antes de tener sesión.
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   hasPermission: (perm: string) => boolean;
   hasRole: (role: string) => boolean;
   isAdmin: boolean;
   isRecaudador: boolean;
   isCliente: boolean;
+  // Selección de rol (usuarios con >1 rol)
+  needsRoleSelection: boolean;
+  availableRoles: string[];
+  selectRole: (role: string) => Promise<void>;
+  cancelRoleSelection: () => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -21,11 +27,13 @@ const AuthContext = createContext<AuthState | null>(null);
 function decodeToken(token: string): UserPayload | null {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
+    // El access token trae `role` (único); mantenemos retrocompat con `roles`.
+    const roles: string[] = payload.role ? [payload.role] : (payload.roles || []);
     return {
       sub: payload.sub,
       personId: payload.personId,
       username: payload.username,
-      roles: payload.roles || [],
+      roles,
       permissions: payload.permissions || [],
     };
   } catch {
@@ -48,6 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Also clear token state if we returned null above
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
+  // Estado del flujo de selección de rol (token pre-auth en memoria, nunca en localStorage)
+  const [preAuthToken, setPreAuthToken] = useState<string | null>(null);
+  const [availableRoles, setAvailableRoles] = useState<string[]>([]);
 
   useEffect(() => {
     if (token) {
@@ -64,18 +75,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (username: string, password: string) => {
-    const res = await authApi.login(username, password);
-    const decoded = decodeToken(res.access_token);
-    setToken(res.access_token);
+  // Guarda el par de tokens y actualiza el estado de sesión.
+  const applyTokens = (accessToken: string) => {
+    const decoded = decodeToken(accessToken);
+    setToken(accessToken);
     setUser(decoded);
-    localStorage.setItem('token', res.access_token);
+    localStorage.setItem('token', accessToken);
+    setPreAuthToken(null);
+    setAvailableRoles([]);
+  };
+
+  const login = async (username: string, password: string): Promise<boolean> => {
+    const res = await authApi.login(username, password);
+    if ('requiresRoleSelection' in res) {
+      // Usuario con >1 rol: no hay sesión aún, se pide elegir rol.
+      setPreAuthToken(res.pre_auth_token);
+      setAvailableRoles(res.roles);
+      return true;
+    }
+    applyTokens(res.access_token);
+    return false;
+  };
+
+  const selectRole = async (role: string) => {
+    if (!preAuthToken) throw new Error('No hay una selección de rol en curso');
+    const res = await authApi.selectRole(role, preAuthToken);
+    applyTokens(res.access_token);
+  };
+
+  const cancelRoleSelection = () => {
+    setPreAuthToken(null);
+    setAvailableRoles([]);
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
+    setPreAuthToken(null);
+    setAvailableRoles([]);
   };
 
   const hasPermission = (perm: string) => user?.permissions.includes(perm) ?? false;
@@ -90,6 +128,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token, user, isAuthenticated: !!token, loading,
       login, logout, hasPermission, hasRole,
       isAdmin, isRecaudador, isCliente,
+      needsRoleSelection: !!preAuthToken,
+      availableRoles, selectRole, cancelRoleSelection,
     }}>
       {children}
     </AuthContext.Provider>

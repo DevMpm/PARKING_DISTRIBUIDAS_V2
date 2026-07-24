@@ -37,8 +37,12 @@ export default function LoginPage() {
     if (!cleanUser || !cleanPass) { setError('Completa todos los campos'); return; }
     setLoading(true);
     try {
-      await login(cleanUser, cleanPass);
-      navigate('/dashboard');
+      const requiresRoleSelection = await login(cleanUser, cleanPass);
+      // Si el usuario tiene >1 rol, la ruta /login renderiza la pantalla de
+      // selección de rol; no navegamos al dashboard todavía.
+      if (!requiresRoleSelection) {
+        navigate('/dashboard');
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
