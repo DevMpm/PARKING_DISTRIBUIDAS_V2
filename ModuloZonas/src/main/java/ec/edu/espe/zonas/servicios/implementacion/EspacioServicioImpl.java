@@ -113,9 +113,9 @@ public class EspacioServicioImpl implements EspacioServicio {
         if(objZona == null) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No existe la zona");
 
 
-        int capacidadActualZona = objZona.getEspacios().size();
+        int ocupacionActualZona = this.buscarPorZona(objZona.getId()).size();
 
-        if(capacidadActualZona < objZona.getCapacidad())
+        if(ocupacionActualZona < objZona.getCapacidad())
         {
             Espacio nuevoEspacio = mapper.toEntityEspacios(request);
             nuevoEspacio.setZona(objZona);
@@ -142,7 +142,6 @@ public class EspacioServicioImpl implements EspacioServicio {
         else//Zona llena
         {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La zona ya está llena");
-
         }
 
 
