@@ -5,6 +5,7 @@ import type {
   Vehiculo, CreateVehiculoRequest,
   Persona, CreatePersonaRequest,
   Role,
+  LoginResponse, TokenPair,
 } from '../types';
 
 const API_BASE = '/api';
@@ -41,12 +42,19 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 // ======== Auth ========
 export const authApi = {
   login: (username: string, password: string) =>
-    request<{ access_token: string; refresh_token: string }>('/usuarios/auth/login', {
+    request<LoginResponse>('/usuarios/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     }),
+  // Intercambia el token pre-auth por un par de tokens con el rol elegido.
+  selectRole: (role: string, preAuthToken: string) =>
+    request<TokenPair>('/usuarios/auth/select-role', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${preAuthToken}` },
+      body: JSON.stringify({ role }),
+    }),
   validate: () =>
-    request<{ userId: string; username: string; roles: string[]; permissions: string[] }>('/usuarios/auth/validate'),
+    request<{ userId: string; username: string; role?: string; roles: string[]; permissions: string[] }>('/usuarios/auth/validate'),
 };
 
 // ======== Zonas ========

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
+import RoleSelectionPage from './pages/RoleSelectionPage';
 import DashboardPage from './pages/DashboardPage';
 import ZonasPage from './pages/ZonasPage';
 import TicketsPage from './pages/TicketsPage';
@@ -73,12 +74,17 @@ function DefaultRedirect() {
 }
 
 function AppRoutes() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, needsRoleSelection } = useAuth();
   if (loading) return <div className="loading-page"><div className="spinner" /><span>Cargando...</span></div>;
+
+  // Usuario autenticado con pre-auth pendiente: pantalla de selección de rol.
+  const loginElement = isAuthenticated
+    ? <DefaultRedirect />
+    : (needsRoleSelection ? <RoleSelectionPage /> : <LoginPage />);
 
   return (
     <Routes>
-      <Route path="/login" element={isAuthenticated ? <DefaultRedirect /> : <LoginPage />} />
+      <Route path="/login" element={loginElement} />
 
       {/* Admin routes */}
       <Route path="/dashboard" element={

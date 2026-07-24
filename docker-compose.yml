@@ -122,6 +122,9 @@ services:
       AUDIT_ROUTING_KEY: audit.event
       KONG_URL: ${KONG_URL}
       PUBLIC_KEY_URL: ${PUBLIC_KEY_URL}
+      USUARIOS_INTERNAL_URL: http://gestion-usuarios:3001/api/usuarios
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      AUTHZ_EXCHANGE: ${AUTHZ_EXCHANGE}
     depends_on:
       db-zonas:
         condition: service_healthy
@@ -146,6 +149,9 @@ services:
       DB_NOMBRE: vehiculos
       ZONAS_SERVICE_URL: http://kong:8000/api/v1/zonas
       GESTION_USUARIOS_URL: http://kong:8000/api/usuarios
+      USUARIOS_INTERNAL_URL: http://gestion-usuarios:3001/api/usuarios
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      AUTHZ_EXCHANGE: ${AUTHZ_EXCHANGE}
       PUBLIC_KEY_URL: ${PUBLIC_KEY_URL}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -190,6 +196,8 @@ services:
       RABBITMQ_QUEUE: audit_queue
       RABBITMQ_EXCHANGE: audit_exchange
       RABBITMQ_ROUTING_KEY: audit.event
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      AUTHZ_EXCHANGE: ${AUTHZ_EXCHANGE}
     depends_on:
       db-usuarios:
         condition: service_healthy
@@ -218,6 +226,9 @@ services:
       VEHICULOS_URL: http://kong:8000
       USUARIOS_URL: http://kong:8000
       ASIGNACIONES_URL: http://kong:8000
+      USUARIOS_INTERNAL_URL: http://gestion-usuarios:3001/api/usuarios
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      AUTHZ_EXCHANGE: ${AUTHZ_EXCHANGE}
       PUBLIC_KEY_URL: ${PUBLIC_KEY_URL}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -250,6 +261,9 @@ services:
       DB_CONTRASENA: asignaciones
       DB_NOMBRE: asignaciones
       GESTION_USUARIOS_URL: http://kong:8000/api/usuarios
+      USUARIOS_INTERNAL_URL: http://gestion-usuarios:3001/api/usuarios
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      AUTHZ_EXCHANGE: ${AUTHZ_EXCHANGE}
       VEHICULOS_SERVICE_URL: http://kong:8000/api/vehiculos
       PUBLIC_KEY_URL: ${PUBLIC_KEY_URL}
       RABBITMQ_HOST: ${RABBITMQ_HOST}

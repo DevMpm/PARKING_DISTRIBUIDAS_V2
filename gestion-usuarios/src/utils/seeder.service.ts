@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Permission } from 'src/roles/entities/permission.entity';
 import { RolePermission } from 'src/roles/entities/role-permission.entity';
 import { CreateRoleuserDto } from 'src/roleusers/dto/create-roleuser.dto';
+import { resolveServiceForPermission } from 'src/roles/service-catalog';
 
 @Injectable()
 export class SeederService implements OnApplicationBootstrap {
@@ -45,10 +46,20 @@ export class SeederService implements OnApplicationBootstrap {
 
     const savedPermissions: Record<string, Permission> = {};
     for (const permName of defaultPermissions) {
+      const service = resolveServiceForPermission(permName);
       let perm = await this.permissionRepository.findOne({ where: { name: permName } });
       if (!perm) {
-        perm = this.permissionRepository.create({ name: permName, description: `Permiso para ${permName}` });
+        perm = this.permissionRepository.create({
+          name: permName,
+          description: `Permiso para ${permName}`,
+          service,
+        });
         await this.permissionRepository.save(perm);
+      } else if (perm.service !== service) {
+        // Backfill de permisos ya existentes (columna `service` nueva o desactualizada)
+        perm.service = service;
+        await this.permissionRepository.save(perm);
+        this.logger.log(`Backfill service de ${permName} -> ${service}`);
       }
       savedPermissions[permName] = perm;
     }

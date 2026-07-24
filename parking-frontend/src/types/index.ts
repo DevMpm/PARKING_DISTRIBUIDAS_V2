@@ -6,10 +6,19 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResponse {
+export interface TokenPair {
   access_token: string;
   refresh_token: string;
 }
+
+export interface RoleSelectionResponse {
+  requiresRoleSelection: true;
+  pre_auth_token: string;
+  roles: string[];
+}
+
+// El login puede resolver directo (1 rol) o pedir selección de rol (>1 roles).
+export type LoginResponse = TokenPair | RoleSelectionResponse;
 
 export interface UserPayload {
   sub: string;        // userId (UUID)

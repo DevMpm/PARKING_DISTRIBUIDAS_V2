@@ -54,6 +54,12 @@ class Settings(BaseSettings):
     ASIGNACIONES_URL: str
     PUBLIC_KEY_URL: str = "http://gestion-usuarios:3001/api/usuarios/auth/jwks"
 
+    # ---------- Autorización pull (Fase 4) ----------
+    USUARIOS_INTERNAL_URL: str = "http://gestion-usuarios:3001/api/usuarios"
+    INTERNAL_API_KEY: str = ""
+    AUTHZ_EXCHANGE: str = "authz_exchange"
+    SERVICE_ID: str = "tickets-service"
+
     # ---------- RabbitMQ ----------
     RABBITMQ_HOST: str = "rabbitmq"
     RABBITMQ_PORT: int = 5672
