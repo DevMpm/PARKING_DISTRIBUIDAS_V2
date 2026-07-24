@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -37,9 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     "spring.datasource.driver-class-name=org.postgresql.Driver",
     "spring.datasource.username=postgres",
     "spring.datasource.password=12345",
-    "spring.jpa.hibernate.ddl-auto=update",
+    "spring.jpa.hibernate.ddl-auto=create-drop",
     "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect",
-    "spring.jpa.properties.hibernate.type.preferred_enum_jdbc_type=INTEGER",
     "spring.rabbitmq.listener.simple.auto-startup=false"
 })
 class ZonaControladorRestCompletoTest {
@@ -75,7 +73,7 @@ class ZonaControladorRestCompletoTest {
     }
 
     // ==========================================
-    // CREAR ZONA (CP1, CP1.1, CP2)
+    // CREAR ZONA (CP1 - CP3)
     // ==========================================
 
     @Test
@@ -100,7 +98,7 @@ class ZonaControladorRestCompletoTest {
     }
 
     @Test
-    void testCrearZonaTipoMinusculas_CP1_1() throws Exception {
+    void testCrearZonaTipoMinusculas_CP2() throws Exception {
         ZonaRequestDTO request = ZonaRequestDTO.builder()
                 .nombre("Zona Norte")
                 .descripcion("Desc")
@@ -118,7 +116,7 @@ class ZonaControladorRestCompletoTest {
     }
 
     @Test
-    void testCrearZonaNombreInvalido_CP2_Subcaso1() throws Exception {
+    void testCrearZonaNombreInvalido_CP3_1() throws Exception {
         ZonaRequestDTO request = ZonaRequestDTO.builder()
                 .nombre("") // Inválido por @NotBlank
                 .descripcion("Sin nombre")
@@ -134,7 +132,7 @@ class ZonaControladorRestCompletoTest {
     }
 
     @Test
-    void testCrearZonaNombreDuplicado_CP2_Subcaso2() throws Exception {
+    void testCrearZonaNombreDuplicado_CP3_2() throws Exception {
         Zona zonaExistente = new Zona();
         zonaExistente.setNombre("Zona Sur");
         zonaExistente.setCodigo("ZONA-SUR.S-01");
@@ -159,7 +157,7 @@ class ZonaControladorRestCompletoTest {
     }
 
     @Test
-    void testCrearZonaTipoInvalido_CP2_Subcaso3() throws Exception {
+    void testCrearZonaTipoInvalido_CP3_3() throws Exception {
         String jsonRequest = "{\"nombre\":\"Zona Este\",\"descripcion\":\"Desc\",\"tipo\":\"INVALIDO\",\"capacidad\":25}";
 
         mockMvc.perform(post("/api/v1/zonas/")
@@ -170,7 +168,7 @@ class ZonaControladorRestCompletoTest {
     }
 
     @Test
-    void testCrearZonaCapacidadInvalida_CP2_Subcaso4() throws Exception {
+    void testCrearZonaCapacidadInvalida_CP3_4() throws Exception {
         ZonaRequestDTO request = ZonaRequestDTO.builder()
                 .nombre("Zona Oeste")
                 .descripcion("Capacidad fuera de rango")
@@ -186,11 +184,11 @@ class ZonaControladorRestCompletoTest {
     }
 
     // ==========================================
-    // OBTENER ZONAS (CP1, CP2.1, CP3)
+    // OBTENER ZONAS (CP4 - CP9)
     // ==========================================
 
     @Test
-    void testObtenerZonas_CP1() throws Exception {
+    void testObtenerZonas_CP4() throws Exception {
         for (int i = 1; i <= 4; i++) {
             Zona z = new Zona();
             z.setNombre("Zona " + i);
@@ -209,7 +207,7 @@ class ZonaControladorRestCompletoTest {
     }
 
     @Test
-    void testObtenerZonasDesocupadas_CP2_1() throws Exception {
+    void testObtenerZonasDesocupadasSiHay_CP4_1() throws Exception {
         Zona z1 = new Zona();
         z1.setNombre("Zona Desocupada");
         z1.setCodigo("ZONA-REG.S-01");
@@ -236,7 +234,7 @@ class ZonaControladorRestCompletoTest {
     }
 
     @Test
-    void testObtenerZonasPorTipo_CP3() throws Exception {
+    void testObtenerZonasPorTipo_CP5_CP9() throws Exception {
         Zona zReg = new Zona();
         zReg.setNombre("Zona Reg");
         zReg.setCodigo("ZONA-REG.M-01");
@@ -263,11 +261,38 @@ class ZonaControladorRestCompletoTest {
     }
 
     // ==========================================
-    // ACTUALIZAR ZONAS
+    // ACTUALIZAR ZONAS (CP10 - CP12)
     // ==========================================
 
     @Test
-    void testActualizarZonaDescripcionInvalida_CP1_1() throws Exception {
+    void testActualizarDescripcion_CP10_1() throws Exception {
+        Zona z = new Zona();
+        z.setNombre("Zona Mod Desc");
+        z.setCodigo("ZONA-REG.S-01");
+        z.setCapacidad(10);
+        z.setEstado(1);
+        z.setTipo(TipoZona.REGULAR);
+        z.setDescripcion("Descripcion antigua");
+        z.setFechaCreacion(LocalDateTime.now());
+        zonaRepositorio.save(z);
+
+        ZonaRequestDTO request = ZonaRequestDTO.builder()
+                .nombre("Zona Mod Desc")
+                .descripcion("Descripcion actualizada correctamente")
+                .tipo(TipoZona.REGULAR)
+                .capacidad(10)
+                .build();
+
+        mockMvc.perform(put("/api/v1/zonas/" + z.getId())
+                        .with(jwtPermisos())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.descripcion", is("Descripcion actualizada correctamente")));
+    }
+
+    @Test
+    void testActualizarDescripcionInvalida_CP10_2() throws Exception {
         Zona z = new Zona();
         z.setNombre("Zona Test");
         z.setCodigo("ZONA-REG.S-01");
@@ -277,7 +302,7 @@ class ZonaControladorRestCompletoTest {
         z.setFechaCreacion(LocalDateTime.now());
         zonaRepositorio.save(z);
 
-        String descripcionLarga = "a".repeat(256); // Excede los 255 caracteres
+        String descripcionLarga = "a".repeat(256); // Excede 255 caracteres
         ZonaRequestDTO request = ZonaRequestDTO.builder()
                 .nombre("Zona Test")
                 .descripcion(descripcionLarga)
@@ -290,5 +315,150 @@ class ZonaControladorRestCompletoTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testActualizarCapacidad_CP11_1() throws Exception {
+        Zona z = new Zona();
+        z.setNombre("Zona Capacidad");
+        z.setCodigo("ZONA-REG.S-01");
+        z.setCapacidad(10);
+        z.setEstado(1);
+        z.setTipo(TipoZona.REGULAR);
+        z.setFechaCreacion(LocalDateTime.now());
+        zonaRepositorio.save(z);
+
+        ZonaRequestDTO request = ZonaRequestDTO.builder()
+                .nombre("Zona Capacidad")
+                .descripcion("Actualizando capacidad")
+                .tipo(TipoZona.REGULAR)
+                .capacidad(25)
+                .build();
+
+        mockMvc.perform(put("/api/v1/zonas/" + z.getId())
+                        .with(jwtPermisos())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.capacidad", is(25)));
+    }
+
+    @Test
+    void testActualizarCapacidadInvalida_CP11_2() throws Exception {
+        Zona z = new Zona();
+        z.setNombre("Zona Cap Inv");
+        z.setCodigo("ZONA-REG.S-01");
+        z.setCapacidad(10);
+        z.setEstado(1);
+        z.setTipo(TipoZona.REGULAR);
+        z.setFechaCreacion(LocalDateTime.now());
+        zonaRepositorio.save(z);
+
+        ZonaRequestDTO request = ZonaRequestDTO.builder()
+                .nombre("Zona Cap Inv")
+                .descripcion("Capacidad invalida")
+                .tipo(TipoZona.REGULAR)
+                .capacidad(0) // Fuera de rango (min 1)
+                .build();
+
+        mockMvc.perform(put("/api/v1/zonas/" + z.getId())
+                        .with(jwtPermisos())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+//     @Test
+//     void testActualizarTipo_CP12_1() throws Exception {
+//         Zona z = new Zona();
+//         z.setNombre("Zona Tipo");
+//         z.setCodigo("ZONA-REG.S-01");
+//         z.setCapacidad(10);
+//         z.setEstado(1);
+//         z.setTipo(TipoZona.REGULAR);
+//         z.setFechaCreacion(LocalDateTime.now());
+//         zonaRepositorio.save(z);
+
+//         ZonaRequestDTO request = ZonaRequestDTO.builder()
+//                 .nombre("Zona Tipo")
+//                 .descripcion("Cambiando tipo a VIP")
+//                 .tipo(TipoZona.VIP)
+//                 .capacidad(10)
+//                 .build();
+
+//         mockMvc.perform(put("/api/v1/zonas/" + z.getId())
+//                         .with(jwtPermisos())
+//                         .contentType(MediaType.APPLICATION_JSON)
+//                         .content(objectMapper.writeValueAsString(request)))
+//                 .andExpect(status().isOk())
+//                 .andExpect(jsonPath("$.tipo", is("VIP")));
+//     }
+
+//     @Test
+//     void testActualizarTipoInvalido_CP12_2() throws Exception {
+//         Zona z = new Zona();
+//         z.setNombre("Zona Tipo Inv");
+//         z.setCodigo("ZONA-REG.S-01");
+//         z.setCapacidad(10);
+//         z.setEstado(1);
+//         z.setTipo(TipoZona.REGULAR);
+//         z.setFechaCreacion(LocalDateTime.now());
+//         zonaRepositorio.save(z);
+
+//         String jsonRequest = "{\"nombre\":\"Zona Tipo Inv\",\"descripcion\":\"Desc\",\"tipo\":\"TIPO_FALSO\",\"capacidad\":10}";
+
+//         mockMvc.perform(put("/api/v1/zonas/" + z.getId())
+//                         .with(jwtPermisos())
+//                         .contentType(MediaType.APPLICATION_JSON)
+//                         .content(jsonRequest))
+//                 .andExpect(status().isBadRequest());
+//     }
+
+    // ==========================================
+    // ACTIVAR / DESACTIVAR ZONAS (CP13 - CP14)
+    // ==========================================
+
+    @Test
+    void testDesactivarZonaConEspaciosOcupados_CP13_1() throws Exception {
+        Zona z = new Zona();
+        z.setNombre("Zona Activa");
+        z.setCodigo("ZONA-REG.S-01");
+        z.setCapacidad(2);
+        z.setEstado(1);
+        z.setTipo(TipoZona.REGULAR);
+        z.setFechaCreacion(LocalDateTime.now());
+        zonaRepositorio.save(z);
+
+        Espacio e1 = new Espacio();
+        e1.setCodigo("ESP-01");
+        e1.setZona(z);
+        e1.setEstado(EstadoEspacio.OCUPADO);
+        e1.setActivo(true);
+        e1.setTipo(TipoEspacio.AUTO);
+        e1.setFechaCreacion(LocalDateTime.now());
+        espacioRepositorio.save(e1);
+
+        // De acuerdo al servicio, si existen espacios ocupados lanza Forbidden (403)
+        // Ocurrirá error por tipo de parámetro en repository si no está adaptado (TDD note),
+        // pero evaluamos la regla REST esperada.
+        mockMvc.perform(patch("/api/v1/zonas/" + z.getId())
+                        .with(jwtPermisos()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testActivarDesactivarZonaPatch_CP14_1() throws Exception {
+        Zona z = new Zona();
+        z.setNombre("Zona Toggle");
+        z.setCodigo("ZONA-REG.S-01");
+        z.setCapacidad(2);
+        z.setEstado(1);
+        z.setTipo(TipoZona.REGULAR);
+        z.setFechaCreacion(LocalDateTime.now());
+        zonaRepositorio.save(z);
+
+        mockMvc.perform(patch("/api/v1/zonas/" + z.getId())
+                        .with(jwtPermisos()))
+                .andExpect(status().isNoContent());
     }
 }

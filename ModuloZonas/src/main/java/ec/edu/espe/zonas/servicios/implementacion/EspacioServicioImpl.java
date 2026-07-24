@@ -213,7 +213,7 @@ public class EspacioServicioImpl implements EspacioServicio {
 
     @Override
     public List<EspacioResponseDTO> obtenerEspaciosPorZonaYEstado(UUID idZona, EstadoEspacio estado) {
-        return repositorioEspacio.findByZonaAndEstado(idZona, estado).stream() //Stream es de la información proveniente
+        return repositorioEspacio.findByZonaIdAndEstado(idZona, estado).stream() //Stream es de la información proveniente
                 .map(mapper::toEspacioResponseDto) // Llama al mapeador
                 .collect(Collectors.toList());
     }

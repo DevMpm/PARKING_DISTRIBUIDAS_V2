@@ -84,7 +84,32 @@ public class ZonaServicioImpl implements ZonaServicio {
 
     @Override
     public ZonaResponseDTO actualizarZona(UUID idZona, ZonaRequestDTO request) {
-        return null;
+        request.setNombre(sanitizador.limpiarTexto(request.getNombre()));
+        request.setDescripcion(sanitizador.escaparHtml(sanitizador.limpiarTexto(request.getDescripcion())));
+        Zona objZona = zonaRepositorio.findById(idZona).orElse(null);
+        if(objZona == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe la zona"); 
+        //Valida nombre duplicado
+         if (!request.getNombre().equalsIgnoreCase(objZona.getNombre()) && zonaRepositorio.existsByNombreIgnoreCase(request.getNombre())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe el nombre");
+        }
+
+        int cantidadEspacios = objZona.getEspacios().size();
+        if (request.getCapacidad() < cantidadEspacios) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La capacidad no puede ser menor al numero de espacios ya existentes");
+        }
+        else {
+            objZona.setCapacidad(request.getCapacidad());
+        }
+        if (request.getDescripcion() != "") 
+        {
+            objZona.setDescripcion(request.getDescripcion());
+        }
+        if (request.getNombre() != "")
+        {
+            objZona.setNombre(request.getNombre());
+        }
+        zonaRepositorio.save(objZona);
+        return mapper.toZonaResponseDto(objZona);
     }
 
     @Override
