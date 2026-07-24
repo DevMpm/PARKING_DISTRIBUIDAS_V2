@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.clients.vehiculos_client import VehiculosClient
 from app.clients.zonas_client import ZonasClient
 from app.clients.asignaciones_client import AsignacionesClient
+from app.core.permissions_cache import permissions_cache
 from app.db.session import get_db
 from app.repositories.ticket_repository import TicketRepository
 from app.services.ticket_service import TicketService
@@ -34,17 +35,24 @@ async def get_current_empleado_id(
 
 
 class RequirePermissions:
+    """Autorización PULL: obtiene el rol (header X-User-Roles inyectado por Kong)
+    y resuelve sus permisos para este servicio vía PermissionsCache (caché +
+    gestion-usuarios), en lugar de leer el header X-User-Permissions."""
+
     def __init__(self, required_permission: str):
         self.required_permission = required_permission
 
-    def __call__(self, x_user_permissions: Annotated[str | None, Header()] = None):
-        if not x_user_permissions:
+    async def __call__(self, x_user_roles: Annotated[str | None, Header()] = None):
+        if not x_user_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No se encontraron permisos en la solicitud",
+                detail="No se encontró el rol en la solicitud",
             )
-        
-        permissions = [p.strip() for p in x_user_permissions.split(",")]
+
+        # Token de rol único: X-User-Roles trae un solo rol (compat: tomamos el primero)
+        role = x_user_roles.split(",")[0].strip()
+        permissions = await permissions_cache.get_permissions(role)
+
         if self.required_permission not in permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

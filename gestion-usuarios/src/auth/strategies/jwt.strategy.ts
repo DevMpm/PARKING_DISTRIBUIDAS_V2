@@ -19,8 +19,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: payload.sub,
       username: payload.username,
-      roles: payload.roles,
+      role: payload.role, // rol único (tokens access/refresh)
+      roles: payload.roles, // lista de roles (token pre-auth)
       permissions: payload.permissions,
+      type: payload.type, // 'pre-auth' | 'access' | 'refresh'
     };
   }
 }

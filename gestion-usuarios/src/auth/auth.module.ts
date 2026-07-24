@@ -25,8 +25,8 @@ import {RoleusersModule} from "../roleusers/roleusers.module";
         return {
           privateKey,
           publicKey,
-          signOptions: { 
-            expiresIn: '1h',
+          signOptions: {
+            expiresIn: '15m',
              algorithm: 'RS256',
              issuer: 'tickets-auth-service',
               },

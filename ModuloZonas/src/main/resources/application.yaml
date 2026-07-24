@@ -68,3 +68,8 @@ app:
     routing-key: ${RABBITMQ_ROUTING_KEY:audit.event}
     audit-exchange: ${AUDIT_EXCHANGE:audit_exchange}
     audit-routing-key: ${AUDIT_ROUTING_KEY:audit.event}
+  # Autorización pull (Fase 4)
+  authz:
+    internal-url: ${USUARIOS_INTERNAL_URL:http://gestion-usuarios:3001/api/usuarios}
+    internal-key: ${INTERNAL_API_KEY:}
+    exchange: ${AUTHZ_EXCHANGE:authz_exchange}

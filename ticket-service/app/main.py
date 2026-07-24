@@ -22,6 +22,7 @@ import logging
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.utils.rabbitmq_publisher import rabbitmq_publisher
+from app.core.permissions_cache import permissions_cache
 
 logger_audit = logging.getLogger("audit_middleware")
 
@@ -29,8 +30,11 @@ logger_audit = logging.getLogger("audit_middleware")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: las tablas se crean vía Alembic, no aquí.
+    # Suscribe la caché de permisos a los eventos de invalidación.
+    await permissions_cache.start_consumer()
     yield
-    # Shutdown: liberar recursos si aplica
+    # Shutdown: liberar recursos.
+    await permissions_cache.stop_consumer()
 
 class AuditMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):

@@ -16,7 +16,9 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { SelectRoleDto } from './dto/select-role.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { PreAuthGuard } from './guards/pre-auth.guard';
 import { ClientIp } from './decorators/client-ip.decorator';
 
 @ApiTags('Autenticación')
@@ -43,6 +45,28 @@ export class AuthController {
     return this.authService.login(user, ip);
   }
 
+  @UseGuards(PreAuthGuard)
+  @Post('select-role')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Seleccionar rol (requiere token pre-auth) y obtener access_token',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Retorna access_token y refresh_token para el rol seleccionado.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'El usuario no posee el rol solicitado.',
+  })
+  async selectRole(
+    @Body() dto: SelectRoleDto,
+    @Req() req,
+    @ClientIp() ip: string,
+  ) {
+    return this.authService.selectRole(req.user, dto.role, ip);
+  }
+
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refrescar access_token usando el refresh_token' })
@@ -67,7 +91,8 @@ export class AuthController {
     return {
       userId: req.user.userId,
       username: req.user.username,
-      roles: req.user.roles,
+      role: req.user.role,
+      roles: req.user.role ? [req.user.role] : req.user.roles,
       permissions: req.user.permissions,
     };
   }

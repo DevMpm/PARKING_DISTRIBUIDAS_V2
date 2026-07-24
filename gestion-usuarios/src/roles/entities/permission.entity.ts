@@ -8,7 +8,12 @@ export class Permission {
  
   @Column({ unique: true })
   name!: string;
- 
+
+  // Microservicio dueño del permiso (ej: 'zonas-service', 'tickets-service').
+  // Usado por la autorización pull para filtrar permisos por servicio consumidor.
+  @Column({ type: 'varchar', nullable: true })
+  service!: string | null;
+
   @Column({ default: true })
   active!: boolean;
  

@@ -75,6 +75,7 @@ services:
               local public_paths = {
                 { path = "^/api/usuarios/auth/login", method = "POST" },
                 { path = "^/api/usuarios/auth/refresh", method = "POST" },
+                { path = "^/api/usuarios/auth/select%-role", method = "POST" },
                 { path = "^/api/usuarios/auth/jwks", method = "GET" },
                 { path = "^/api/usuarios/personas/exists/", method = "GET" },
                 { path = "^/api/usuarios/personas/?$", method = "POST" },
@@ -182,6 +183,7 @@ services:
               local public_paths = {
                 { path = "^/api/usuarios/auth/login", method = "POST" },
                 { path = "^/api/usuarios/auth/refresh", method = "POST" },
+                { path = "^/api/usuarios/auth/select%-role", method = "POST" },
                 { path = "^/api/usuarios/auth/jwks", method = "GET" },
                 { path = "^/api/usuarios/personas/exists/", method = "GET" },
                 { path = "^/api/usuarios/personas/?$", method = "POST" },
@@ -278,6 +280,7 @@ services:
               local public_paths = {
                 { path = "^/api/usuarios/auth/login", method = "POST" },
                 { path = "^/api/usuarios/auth/refresh", method = "POST" },
+                { path = "^/api/usuarios/auth/select%-role", method = "POST" },
                 { path = "^/api/usuarios/auth/jwks", method = "GET" },
                 { path = "^/api/usuarios/personas/exists/", method = "GET" },
                 { path = "^/api/usuarios/personas/?$", method = "POST" },
@@ -374,6 +377,7 @@ services:
               local public_paths = {
                 { path = "^/api/usuarios/auth/login", method = "POST" },
                 { path = "^/api/usuarios/auth/refresh", method = "POST" },
+                { path = "^/api/usuarios/auth/select%-role", method = "POST" },
                 { path = "^/api/usuarios/auth/jwks", method = "GET" },
                 { path = "^/api/usuarios/personas/exists/", method = "GET" },
                 { path = "^/api/usuarios/personas/?$", method = "POST" },
@@ -478,6 +482,7 @@ services:
               local public_paths = {
                 { path = "^/api/usuarios/auth/login", method = "POST" },
                 { path = "^/api/usuarios/auth/refresh", method = "POST" },
+                { path = "^/api/usuarios/auth/select%-role", method = "POST" },
                 { path = "^/api/usuarios/auth/jwks", method = "GET" },
                 { path = "^/api/usuarios/personas/exists/", method = "GET" },
                 { path = "^/api/usuarios/personas/?$", method = "POST" },
@@ -578,6 +583,7 @@ services:
               local public_paths = {
                 { path = "^/api/usuarios/auth/login", method = "POST" },
                 { path = "^/api/usuarios/auth/refresh", method = "POST" },
+                { path = "^/api/usuarios/auth/select%-role", method = "POST" },
                 { path = "^/api/usuarios/auth/jwks", method = "GET" },
                 { path = "^/api/usuarios/personas/exists/", method = "GET" },
                 { path = "^/api/usuarios/personas/?$", method = "POST" },
