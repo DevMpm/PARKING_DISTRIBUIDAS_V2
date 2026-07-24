@@ -2,6 +2,7 @@ package ec.edu.espe.zonas.controladores;
 
 import ec.edu.espe.zonas.datos.dtos.BusquedaZonaEstadoDTO;
 import ec.edu.espe.zonas.datos.dtos.EspacioRequestDTO;
+import ec.edu.espe.zonas.datos.dtos.EspacioUpdateRequestDTO;
 import ec.edu.espe.zonas.datos.dtos.EspacioResponseDTO;
 import ec.edu.espe.zonas.dominio.entidades.EstadoEspacio;
 import ec.edu.espe.zonas.dominio.entidades.TipoEspacio;
@@ -75,7 +76,7 @@ public class EspacioControlador {
     })
     @PutMapping("/{idEspacio}")
     @PreAuthorize("hasAuthority('ZONAS_UPDATE')")
-    public ResponseEntity<EspacioResponseDTO> actualizarEspacio(@PathVariable UUID idEspacio, @Valid @RequestBody  EspacioRequestDTO request){
+    public ResponseEntity<EspacioResponseDTO> actualizarEspacio(@PathVariable UUID idEspacio, @Valid @RequestBody  EspacioUpdateRequestDTO request){
         return ResponseEntity.ok(servicio.actualizarEspacio(idEspacio, request));
     }
 

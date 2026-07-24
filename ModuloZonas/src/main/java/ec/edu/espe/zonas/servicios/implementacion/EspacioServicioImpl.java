@@ -1,6 +1,7 @@
 package ec.edu.espe.zonas.servicios.implementacion;
 
 import ec.edu.espe.zonas.datos.dtos.EspacioRequestDTO;
+import ec.edu.espe.zonas.datos.dtos.EspacioUpdateRequestDTO;
 import ec.edu.espe.zonas.datos.dtos.EspacioResponseDTO;
 import ec.edu.espe.zonas.dominio.entidades.Espacio;
 import ec.edu.espe.zonas.dominio.entidades.EstadoEspacio;
@@ -109,7 +110,7 @@ public class EspacioServicioImpl implements EspacioServicio {
         request.setDescripcion(sanitizador.escaparHtml(sanitizador.limpiarTexto(request.getDescripcion())));
 
         Zona objZona = repositorioZona.findById(request.getIdZona()).orElse(null);
-        if(objZona == null) return null;
+        if(objZona == null) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No existe la zona");
 
 
         int capacidadActualZona = objZona.getEspacios().size();
@@ -148,22 +149,31 @@ public class EspacioServicioImpl implements EspacioServicio {
     }
 
     @Override
-    public EspacioResponseDTO actualizarEspacio(UUID idEspacio, EspacioRequestDTO request) {
+    public EspacioResponseDTO actualizarEspacio(UUID idEspacio, EspacioUpdateRequestDTO request) {
         request.setDescripcion(sanitizador.escaparHtml(sanitizador.limpiarTexto(request.getDescripcion())));
 
         Espacio objEspacio = repositorioEspacio.findById(idEspacio).orElse(null);
         Espacio espacioOriginal = objEspacio; // Copia del objeto original para auditoría
 
-        if(objEspacio == null) return null; //Espacio no encontrado
+        if(objEspacio == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado");
 
-        //objEspacio.setEstado(request.getEstado());
-        objEspacio.setDescripcion(request.getDescripcion());
-        objEspacio.setTipo(request.getTipo());
+
+        if(request.getTipo() != null && objEspacio.getEstado().equals(EstadoEspacio.OCUPADO)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No se puede cambiar el tipo de espacio mientras está ocupado");
+        }
+        if(request.getTipo() != null) objEspacio.setTipo(request.getTipo());
+        if(request.getEstado() != null) objEspacio.setEstado(request.getEstado());
+        if(request.getDescripcion() != null) objEspacio.setDescripcion(request.getDescripcion());
         //Cambio de zona
-        if(objEspacio.getZona().getId() != request.getIdZona()){
-            Zona objZona = repositorioZona.findById(request.getIdZona()).orElse(null);
-            if(objZona != null) objEspacio.setZona(objZona);
-        };
+        // if((request.getIdZona() != null) && (objEspacio.getZona().getId() != request.getIdZona())){
+        //     Zona objZona = repositorioZona.findById(request.getIdZona()).orElse(null);
+        //     if(objZona == null){
+        //         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No existe la zona");
+        //     }
+        //     else{
+        //         objEspacio.setZona(objZona)
+        //     }
+        // };
         objEspacio.setFechaModificacion(LocalDateTime.now(java.time.ZoneOffset.UTC));
 
         Espacio espacioActualizado = repositorioEspacio.save(objEspacio);
@@ -195,7 +205,9 @@ public class EspacioServicioImpl implements EspacioServicio {
         Espacio objEspacio = repositorioEspacio.findById(idEspacio).orElse(null);
         Espacio espacioOriginal = objEspacio; // Copia del objeto original para auditoría
 
-        if(objEspacio == null || objEspacio.getEstado() == estado) return null;
+        if(objEspacio == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Espacio no encontrado");
+
+        if(objEspacio.getEstado() == estado) return null; // No hay cambio de estado
 
         objEspacio.setEstado(estado);
         EspacioResponseDTO responseDto = mapper.toEspacioResponseDto(objEspacio);
