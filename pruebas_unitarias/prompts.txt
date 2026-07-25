@@ -26,3 +26,58 @@ Considera los siguientes aspectos:
 Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes forzar a que pasen, solo comunícamelas. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
 
 Es importante que recuerdes que estas pruebas están orientadas a la entidad Espacio, por lo que al mencionar estados y tipos en los casos de prueba, siempre serán de espacios, no de zonas. 
+
+------ Vehiculos Plan ----------------
+Con base en la siguiente estructura y guía, crea una lista de casos de prueba "CP" para el módulo de vehículos en la carpeta @VehiclesNPM/vehiculos/src/vehiculos.
+
+- Los casos de prueba corresponderán a pruebas de estilo REST sobre los diferentes endpoints en el archivo @VehiclesNPM/vehiculos/src/vehiculos/vehiculos.controller.ts. 
+
+- Puedes revisar la lógica den todo el módulo de vehículos, @VehiclesNPM/vehiculos/src/vehiculos. Sin embargo, te recomiendo seguir esta estructura para definir los casos:
+
+Endpoints/Operaciones Create
+
+- CP Crear ok → Verificar 200, Respuesta con datos correctos, Buscar por Id para confirmar creación.
+- CP Crear duplicado - Verificar 409 y mensaje de error.
+- CP datos inválidos, Maneja al menos un caso por campo y constraint del DTO. → Verificar 400 y mensaje de error.
+
+Endpoints/Operaciones Get que devuelven varios resultados.
+
+- CP Buscar ok → Verificar 200 y cantidad de registros obtenidos en la consulta.
+(Si buscan por un parámetro también va este caso:)
+- CP Buscar sin resultados → Verificar 200 y cantidad de registros obtenidos (0).
+
+Endpoints/Operaciones Get que devuelven un único resultado.
+
+- CP Buscar ok → Verificar 200, Datos de la respuesta coinciden con parámetro de búsqueda.
+- CP Buscar sin resultado → Verificar 404 y mensaje de error.
+
+Endpoints/Operaciones de actualizar (UPDATE, PATCH)
+
+- CP actualizar ok → Verificar 200, Datos de respuesta coinciden, Buscar por Id para confirmar el cambio.
+- CP not found → Verificar 404 y mensaje de error.
+- CP datos inválidos, al menos un caso por constraint del dto. → Verificar 400 y mensaje de error.
+
+Endpoints/Operacioens de eliminar
+
+- CP eliminar ok → Verificar 200, Buscar por Id para confirmar not found o cambio de estado si es eliminación lógica.
+- CP eliminar not found → Verificar 404 y mensaje de error.  
+
+Toma como referencia los archivos @cp_espacios y @cp_zonas para la elaboración de los casos y sigue su nomenclatura y estructura: Precondiciones, Entrada y Verificar. 
+
+Genera únicamente la lista de casos en un archivo "cp_vehículos.txt" en la carpeta @pruebas_unitarias/, aún no escribas código de pruebas. 
+
+- Considera que en vehículo se manejan 3 tipos, por lo que en los endpoints de crear y actualizar debes definir casos que consideren los campos y características únicas de cada tipo. Las características compartidas en vehículo pueden probarse una vez, pero las que son específicas de cada tipo deben probarse por separado.
+
+------------Vehiculos Exec --------------
+Con base en el archivo @/puebas_unitarias/cp_vehículos.txt, crea un archivo que implemente pruebas unitarias en NestJS que permitan probar desde un punto de vista REST, no desde servicios. 
+Considera los siguientes aspectos:
+- Como los endpoints están protegidos por JWT, puedes trabajar con un mock que cuente con los permisos necesarios, para que el control pase. Revisa los archivos de controlador en @VehiclesNPM/vehiculos/src/vehiculos y la configuración de seguridad en @VehiclesNPM/vehiculos/src/auth para tener un panorama completo de como funcionan los flujos de autorización.
+- Puedes guiarte por los archivos de dto en la carpeta @VehiclesNPM/vehiculos/src/vehiculos/dto, los archivos de entidad en @VehiclesNPM/vehiculos/src/vehiculos/entities y por los servicios en la carpeta @VehiclesNPM/vehiculos/src/vehiculos/utils y el servicio @VehiclesNPM/vehiculos/src/vehiculos/vehiculos.service.ts para entender las validaciones, mensajes de error y lógica que manejan, pero no puedes modificarlos. 
+- Puedes usar funciones que llamen a los servicios para acciones que formen parte de las verificaciones o Precondiciones, como crear zonas, espacios o hacer una búsqueda.
+- Si es necesario agregar dependencias al módulo @VehiclesNPM/vehiculos puedes hacerlo, pero no puedes manipular dependencias ya existentes. Tampoco puedes modificar otros archivos que no sean los spec.ts sin permiso. Si lo consideras necesario, indícame la razón y yo revisaré antes de autorizarlo. Si detectas un cambio que no hayas realizado, es un cambio hecho por mí, entonces no debes quitarlo.
+- Para las pruebas usa una base de datos mock de postgresql, toma como base la estrcutura de db-vehiculos en @docker-compose.yaml, pero no modifiques este archivo. 
+- No olvides incluir los casos adicionales o sub-casos de prueba, se escriben con la palabra clave "CP". 
+
+Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes forzar a que pasen, solo comunícamelas. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
+
+Como solo estoy manejando pruebas unitarias no intentes tocar las pruebas end-to-end del módulo, y de preferencia trabaja modificando los archivos de test ya existentes.

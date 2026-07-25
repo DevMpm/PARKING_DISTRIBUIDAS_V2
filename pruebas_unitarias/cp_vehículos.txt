@@ -1,0 +1,344 @@
+Crear Vehículo
+
+CP1.1 Crear vehículo tipo Auto ok
+Precondiciones: Token JWT con roles suficientes (VEHICULOS_CREATE)
+Entrada: JSON con tipo "Auto", idPropietario opcional y datos válidos de Auto (placa ABC-1234, marca Toyota, modelo Corolla, color Rojo, anio 2022, clasificacion Gasolina, numeroPuertas 4, capacidadMaletero 400)
+Verificar:
+1. Código de respuesta 201
+2. Respuesta DTO con datos correctos del auto.
+3. Buscar por Id para confirmar su existencia.
+
+CP1.2 Crear vehículo tipo Motocicleta ok
+Precondiciones: Token JWT con roles suficientes (VEHICULOS_CREATE)
+Entrada: JSON con tipo "Motocicleta", idPropietario opcional y datos válidos de Motocicleta (placa ABC-123D, marca Honda, modelo CBR, color Negro, anio 2023, clasificacion Gasolina, tipoMoto Deportiva)
+Verificar:
+1. Código de respuesta 201
+2. Respuesta DTO con datos correctos de la motocicleta.
+3. Buscar por Id para confirmar su existencia.
+
+CP1.3 Crear vehículo tipo Camioneta ok
+Precondiciones: Token JWT con roles suficientes (VEHICULOS_CREATE)
+Entrada: JSON con tipo "Camioneta", idPropietario opcional y datos válidos de Camioneta (placa ABC-1234, marca Ford, modelo Ranger, color Blanco, anio 2021, clasificacion Diesel, cabina doble, capacidadCarga 800)
+Verificar:
+1. Código de respuesta 201
+2. Respuesta DTO con datos correctos de la camioneta.
+3. Buscar por Id para confirmar su existencia.
+
+CP2. Crear vehículo duplicado
+Precondiciones: Token JWT con roles suficientes y un vehículo previamente creado con la placa "ABC-1234".
+Entrada: JSON con los mismos datos y placa duplicada "ABC-1234".
+Verificar:
+1. Código de respuesta 409
+2. Mensaje de error indicando conflicto o placa existente.
+
+CP3.1 Crear vehículo - Placa base inválida (Formato incorrecto)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con placa inválida (ej: "123-ABCD", "AB-123", "ABC1234").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para la placa.
+
+CP3.2 Crear vehículo - Marca vacía o ausente
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con marca omitida o string vacío `""`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para la marca.
+
+CP3.3 Crear vehículo - Marca muy corta (< 2 caracteres)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con marca `"A"`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para la marca.
+
+CP3.4 Crear vehículo - Marca muy larga (> 30 caracteres)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con marca de 31 caracteres alfabéticos.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para la marca.
+
+CP3.5 Crear vehículo - Marca con caracteres no permitidos (números o símbolos)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con marca `"Toyota123"` o `"Toyota!"`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para la marca.
+
+CP3.6 Crear vehículo - Modelo vacío o ausente
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con modelo omitido o string vacío `""`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el modelo.
+
+CP3.7 Crear vehículo - Modelo muy corto (< 3 caracteres)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con modelo `"AB"`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el modelo.
+
+CP3.8 Crear vehículo - Modelo muy largo (> 107 caracteres)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con modelo de 108 caracteres.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el modelo.
+
+CP3.9 Crear vehículo - Color vacío o inválido (< 3 caracteres o símbolos)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con color `"Ro"` o `"Rojo123"`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el color.
+
+CP3.10 Crear vehículo - Año menor al permitido (< 1885)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con año `1884`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el año.
+
+CP3.11 Crear vehículo - Año futuro mayor al actual
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con año `2035`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el año.
+
+CP3.12 Crear vehículo - Clasificación inválida o fuera de enum
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con clasificacion `"Nuclear"`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para la clasificación.
+
+CP3.13 Crear vehículo Auto - Número de puertas menor al mínimo (< 2)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con tipo "Auto" y numeroPuertas `1`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para numeroPuertas.
+
+CP3.14 Crear vehículo Auto - Número de puertas mayor al máximo (> 5)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con tipo "Auto" y numeroPuertas `6`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para numeroPuertas.
+
+CP3.15 Crear vehículo Auto - Capacidad de maletero menor al mínimo (< 150)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con tipo "Auto" y capacidadMaletero `100`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para capacidadMaletero.
+
+CP3.16 Crear vehículo Auto - Capacidad de maletero mayor al máximo (> 800)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con tipo "Auto" y capacidadMaletero `900`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para capacidadMaletero.
+
+CP3.17 Crear vehículo Motocicleta - Placa de moto con formato inválido
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con tipo "Motocicleta" y placa `"ABC-1234"` (formato de auto en lugar de `ABC-123D`).
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para la placa de motocicleta.
+
+CP3.18 Crear vehículo Motocicleta - Tipo de moto inválido o fuera de enum
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con tipo "Motocicleta" y tipoMoto `"Chopper"`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para tipoMoto.
+
+CP3.19 Crear vehículo Camioneta - Cabina inválida (distinta de 'simple' o 'doble')
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con tipo "Camioneta" y cabina `"extrahumana"`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para cabina.
+
+CP3.20 Crear vehículo Camioneta - Capacidad de carga menor al mínimo (< 450)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con tipo "Camioneta" y capacidadCarga `300`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para capacidadCarga.
+
+CP3.21 Crear vehículo Camioneta - Capacidad de carga mayor al máximo (> 1360)
+Precondiciones: Token JWT con roles suficientes
+Entrada: JSON con tipo "Camioneta" y capacidadCarga `1500`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para capacidadCarga.
+
+Obtener Vehículos (Múltiples resultados)
+
+CP4.1 Obtener todos los vehículos ok
+Precondiciones: Token JWT con roles suficientes (VEHICULOS_READ) y vehículos creados en el sistema.
+Entrada: Ninguna (GET /vehiculos)
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros obtenidos en el array acorde al total existente.
+
+CP4.2 Obtener vehículos por ID de propietario ok
+Precondiciones: Token JWT con roles suficientes y vehículos asociados a un idPropietario específico.
+Entrada: UUID de propietario como parámetro (GET /vehiculos/propietario/:idPropietario)
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros obtenidos coincidente con las asignaciones del propietario.
+
+CP4.3 Obtener vehículos por ID de propietario sin resultados
+Precondiciones: Token JWT con roles suficientes
+Entrada: UUID de propietario sin vehículos asociados.
+Verificar:
+1. Código de respuesta 200 y cantidad de registros 0 (array vacío).
+
+Obtener Vehículo (Único resultado)
+
+CP5.1 Buscar vehículo por ID ok
+Precondiciones: Token JWT con roles suficientes y un vehículo creado con UUID válido.
+Entrada: UUID del vehículo como parámetro (GET /vehiculos/:id)
+Verificar:
+1. Código de respuesta 200
+2. Datos de la respuesta coinciden exactamente con el vehículo buscado.
+
+CP5.2 Buscar vehículo por ID no existente
+Precondiciones: Token JWT con roles suficientes
+Entrada: UUID inexistente.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error de vehículo no encontrado.
+
+CP5.3 Buscar vehículo por placa ok
+Precondiciones: Token JWT con roles suficientes y un vehículo creado con placa conocida.
+Entrada: Placa como parámetro (GET /vehiculos/placa/:placa)
+Verificar:
+1. Código de respuesta 200
+2. Datos de la respuesta coinciden con el vehículo de esa placa.
+
+CP5.4 Buscar vehículo por placa no existente
+Precondiciones: Token JWT con roles suficientes
+Entrada: Placa no registrada en el sistema.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error de vehículo no encontrado.
+
+Actualizar Vehículo (UPDATE, PATCH)
+
+CP6.1 Actualizar vehículo Auto ok
+Precondiciones: Token JWT con roles suficientes (VEHICULOS_UPDATE) y un Auto creado.
+Entrada: DTO de actualización válido para Auto (numeroPuertas: 2, capacidadMaletero: 500, idPropietario: UUID válido). UUID del auto como parámetro (PATCH /vehiculos/:id).
+Verificar:
+1. Código de respuesta 200
+2. Datos de respuesta coinciden con los cambios aplicados.
+3. Buscar por Id para confirmar el cambio en la base de datos.
+
+CP6.2 Actualizar vehículo Motocicleta ok
+Precondiciones: Token JWT con roles suficientes (VEHICULOS_UPDATE) y una Motocicleta creada.
+Entrada: DTO de actualización válido para Motocicleta (tipoMoto: "Scooter"). UUID de la moto como parámetro (PATCH /vehiculos/:id).
+Verificar:
+1. Código de respuesta 200
+2. Datos de respuesta coinciden con los cambios aplicados.
+3. Buscar por Id para confirmar el cambio.
+
+CP6.3 Actualizar vehículo Camioneta ok
+Precondiciones: Token JWT con roles suficientes (VEHICULOS_UPDATE) y una Camioneta creada.
+Entrada: DTO de actualización válido para Camioneta (cabina: "simple", capacidadCarga: 900). UUID de la camioneta como parámetro (PATCH /vehiculos/:id).
+Verificar:
+1. Código de respuesta 200
+2. Datos de respuesta coinciden con los cambios aplicados.
+3. Buscar por Id para confirmar el cambio.
+
+CP6.4 Actualizar vehículo - Not Found
+Precondiciones: Token JWT con roles suficientes
+Entrada: UUID inexistente y DTO de actualización válido.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
+
+CP6.5 Actualizar vehículo - Intento de modificar placa (Inmutable)
+Precondiciones: Token JWT con roles suficientes y un vehículo creado.
+Entrada: DTO de actualización intentando enviar el campo `placa`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la placa no se puede modificar.
+
+CP6.6 Actualizar vehículo - Intento de modificar marca, modelo o año (Inmutables)
+Precondiciones: Token JWT con roles suficientes y un vehículo creado.
+Entrada: DTO de actualización intentando enviar `marca`, `modelo` o `anio`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que dichos campos no se pueden modificar.
+
+CP6.7 Actualizar vehículo Auto - Número de puertas inválido (< 2 o > 5)
+Precondiciones: Token JWT con roles suficientes y un Auto creado.
+Entrada: DTO de actualización con numeroPuertas `6`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación.
+
+CP6.8 Actualizar vehículo Auto - Capacidad de maletero inválida (< 150 o > 800)
+Precondiciones: Token JWT con roles suficientes y un Auto creado.
+Entrada: DTO de actualización con capacidadMaletero `50`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación.
+
+CP6.9 Actualizar vehículo Motocicleta - Tipo de moto inválido
+Precondiciones: Token JWT con roles suficientes y una Motocicleta creada.
+Entrada: DTO de actualización con tipoMoto `"Invalido"`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación.
+
+CP6.10 Actualizar vehículo Camioneta - Cabina inválida
+Precondiciones: Token JWT con roles suficientes y una Camioneta creada.
+Entrada: DTO de actualización con cabina `"triple"`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación.
+
+CP6.11 Actualizar vehículo Camioneta - Capacidad de carga inválida
+Precondiciones: Token JWT con roles suficientes y una Camioneta creada.
+Entrada: DTO de actualización con capacidadCarga `2000`.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación.
+
+Eliminar y Reactivar Vehículo
+
+CP7.1 Eliminar vehículo ok (Baja lógica)
+Precondiciones: Token JWT con roles suficientes (VEHICULOS_DELETE) y un vehículo creado.
+Entrada: UUID del vehículo como parámetro (DELETE /vehiculos/:id)
+Verificar:
+1. Código de respuesta 200
+2. Buscar por Id para confirmar que el estado activo cambió a false (baja lógica).
+
+CP7.2 Eliminar vehículo - Not Found
+Precondiciones: Token JWT con roles suficientes
+Entrada: UUID inexistente.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
+
+CP8.1 Reactivar vehículo ok
+Precondiciones: Token JWT con roles suficientes (VEHICULOS_UPDATE) y un vehículo previamente dado de baja (activo = false).
+Entrada: UUID como parámetro y opcional idPropietario en el body (PATCH /vehiculos/:id/reactivar)
+Verificar:
+1. Código de respuesta 200
+2. Datos de respuesta con activo = true.
+3. Buscar por Id para confirmar reactivación.
+
+CP8.2 Reactivar vehículo - Not Found
+Precondiciones: Token JWT con roles suficientes
+Entrada: UUID inexistente.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.

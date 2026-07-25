@@ -80,7 +80,7 @@ export class VehiculosController {
   @ApiParam({ name: 'id', description: 'UUID del vehículo a actualizar', example: '123e4567-e89b-12d3-a456-426614174000' })
   @RequirePermissions('VEHICULOS_UPDATE')
   @Patch(':id')
-  update(@Param('id') id: string, @Body(UpdateVehiculoPipe) updateVehiculoDto: UpdateVehiculoDto) {
+  update(@Param('id') id: string, @Body(UpdateVehiculoPipe) updateVehiculoDto: any) {
     return this.vehiculosService.update(id, updateVehiculoDto);
   }
 
