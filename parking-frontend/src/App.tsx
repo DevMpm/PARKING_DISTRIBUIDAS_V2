@@ -35,6 +35,15 @@ function RoleRoute({ children, allowAdmin, allowRecaudador, allowCliente }: {
   return <Navigate to="/mi-vehiculo" replace />;
 }
 
+// Ruta de gestión gateada por PERMISO. Los clientes se envían a su vista;
+// un gestor sin el permiso concreto vuelve al dashboard.
+function RequirePermission({ perm, children }: { perm: string; children: ReactNode }) {
+  const { isCliente, hasPermission } = useAuth();
+  if (isCliente) return <Navigate to="/mi-vehiculo" replace />;
+  if (!hasPermission(perm)) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
 function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -86,23 +95,21 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={loginElement} />
 
-      {/* Admin routes */}
+      {/* Rutas de gestión — gateadas por permiso (el dashboard por rol) */}
       <Route path="/dashboard" element={
         <ProtectedRoute><RoleRoute allowAdmin allowRecaudador><AppLayout><DashboardPage /></AppLayout></RoleRoute></ProtectedRoute>
       } />
       <Route path="/zonas" element={
-        <ProtectedRoute><RoleRoute allowAdmin><AppLayout><ZonasPage /></AppLayout></RoleRoute></ProtectedRoute>
+        <ProtectedRoute><RequirePermission perm="ZONAS_READ"><AppLayout><ZonasPage /></AppLayout></RequirePermission></ProtectedRoute>
       } />
       <Route path="/vehiculos" element={
-        <ProtectedRoute><RoleRoute allowAdmin allowRecaudador><AppLayout><VehiculosPage /></AppLayout></RoleRoute></ProtectedRoute>
+        <ProtectedRoute><RequirePermission perm="VEHICULOS_READ"><AppLayout><VehiculosPage /></AppLayout></RequirePermission></ProtectedRoute>
       } />
       <Route path="/usuarios" element={
-        <ProtectedRoute><RoleRoute allowAdmin><AppLayout><UsuariosPage /></AppLayout></RoleRoute></ProtectedRoute>
+        <ProtectedRoute><RequirePermission perm="USUARIOS_READ"><AppLayout><UsuariosPage /></AppLayout></RequirePermission></ProtectedRoute>
       } />
-
-      {/* Recaudador + Admin routes */}
       <Route path="/tickets" element={
-        <ProtectedRoute><RoleRoute allowAdmin allowRecaudador><AppLayout><TicketsPage /></AppLayout></RoleRoute></ProtectedRoute>
+        <ProtectedRoute><RequirePermission perm="TICKETS_READ"><AppLayout><TicketsPage /></AppLayout></RequirePermission></ProtectedRoute>
       } />
 
       {/* Client routes */}

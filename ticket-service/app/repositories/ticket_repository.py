@@ -42,7 +42,21 @@ class TicketRepository:
 
     async def list_by_estado(self, estado: EstadoTicket) -> list[Ticket]:
         result = await self.db.execute(
-            select(Ticket).where(Ticket.estado_ticket == estado)
+            select(Ticket)
+            .where(Ticket.estado_ticket == estado)
+            .order_by(Ticket.fecha_hora_ingreso.desc())
+        )
+        return list(result.scalars().all())
+
+    async def list_activos_by_usuario(self, id_usuario: uuid.UUID) -> list[Ticket]:
+        """Tickets ACTIVOS de una persona (id_usuario == idPropietario del vehículo)."""
+        result = await self.db.execute(
+            select(Ticket)
+            .where(
+                Ticket.id_usuario == id_usuario,
+                Ticket.estado_ticket == EstadoTicket.ACTIVO,
+            )
+            .order_by(Ticket.fecha_hora_ingreso.desc())
         )
         return list(result.scalars().all())
 

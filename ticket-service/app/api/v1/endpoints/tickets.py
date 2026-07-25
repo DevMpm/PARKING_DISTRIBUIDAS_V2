@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.security import HTTPBearer
 
 from app.core.dependencies import get_current_empleado_id, get_ticket_service, RequirePermissions
+from app.clients.usuarios_client import resolve_persona_id_by_dni
 from app.schemas.ticket import (
     TicketAnular,
     TicketCreate,
@@ -28,6 +29,27 @@ async def crear_ticket(
 ):
     ticket = await service.create_ticket(data, id_empleado)
     return TicketResponse.model_validate(ticket)
+
+
+@router.get("/", response_model=list[TicketResponse])
+async def listar_tickets_activos(
+    service: Annotated[TicketService, Depends(get_ticket_service)],
+    id_usuario: uuid.UUID | None = None,
+    cedula: str | None = None,
+    _ = Depends(RequirePermissions("TICKETS_READ")),
+):
+    """Lista los tickets ACTIVOS.
+    - Sin parámetros: todos los activos.
+    - ?cedula=<dni>: resuelve la cédula a personId internamente (sin exigir USUARIOS_READ
+      al usuario) y filtra por propietario. Si la cédula no existe, devuelve [].
+    - ?id_usuario=<persona_id>: filtra directamente por id de persona.
+    """
+    if cedula:
+        id_usuario = await resolve_persona_id_by_dni(cedula)
+        if id_usuario is None:
+            return []
+    tickets = await service.list_activos(id_usuario)
+    return [TicketResponse.model_validate(t) for t in tickets]
 
 
 @router.get("/{id_ticket}", response_model=TicketResponse)

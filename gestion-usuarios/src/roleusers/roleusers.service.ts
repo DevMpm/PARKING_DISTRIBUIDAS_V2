@@ -48,7 +48,9 @@ export class RoleusersService {
   }
 
   async findAll(): Promise<UserRole[]> {
-    return this.userRoleRepository.find();
+    return this.userRoleRepository.find({
+      relations: { role: true },
+    });
   }
 
   async findOne(id_user: string, id_role: string): Promise<UserRole> {

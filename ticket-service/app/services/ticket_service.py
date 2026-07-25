@@ -214,6 +214,15 @@ class TicketService:
     async def get_ticket(self, id_ticket: uuid.UUID) -> Ticket:
         return await self._get_ticket_o_falla(id_ticket)
 
+    async def list_activos(
+        self, id_usuario: uuid.UUID | None = None
+    ) -> list[Ticket]:
+        """Lista los tickets ACTIVOS. Si se pasa id_usuario (id de la persona
+        propietaria), filtra solo los suyos; útil para buscar por cédula."""
+        if id_usuario is not None:
+            return await self.ticket_repository.list_activos_by_usuario(id_usuario)
+        return await self.ticket_repository.list_by_estado(EstadoTicket.ACTIVO)
+
     # ---------- helpers privados ----------
 
     @staticmethod
