@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { zonasApi, espaciosApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import { useEspaciosSSE } from '../hooks/useEspaciosSSE';
 import type { Zona, Espacio, TipoZona, CreateZonaRequest, CreateEspacioRequest, TipoEspacio } from '../types';
 
 const TIPO_ZONA_OPTIONS: TipoZona[] = ['VIP', 'REGULAR', 'INTERNA', 'EXTERNA', 'PREFERENCIAL'];
@@ -29,6 +30,9 @@ export default function ZonasPage() {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // Monitoreo en vivo del estado de espacios (SSE)
+  useEspaciosSSE(setEspacios);
 
   const zonasEspacios = selectedZona
     ? espacios.filter(e => e.idZona === selectedZona)

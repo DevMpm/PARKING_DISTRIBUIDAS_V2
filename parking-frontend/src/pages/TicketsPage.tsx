@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ticketsApi, espaciosApi, zonasApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import { useEspaciosSSE } from '../hooks/useEspaciosSSE';
 import type { Ticket, Espacio, Zona } from '../types';
 
 export default function TicketsPage() {
@@ -54,6 +55,14 @@ export default function TicketsPage() {
       setFilterLabel('');
     } catch { /* */ }
   };
+
+  // Monitoreo en vivo (SSE): actualiza el estado de espacios y, si no hay un
+  // filtro por cédula aplicado, refresca la lista de tickets activos.
+  useEspaciosSSE(setEspacios, () => {
+    if (!filterLabel) {
+      ticketsApi.getActivos().then(setTickets).catch(() => { /* */ });
+    }
+  });
 
   const filteredEspacios = selectedZonaFilter
     ? espacios.filter(e => e.idZona === selectedZonaFilter)
