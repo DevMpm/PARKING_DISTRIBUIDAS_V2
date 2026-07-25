@@ -166,11 +166,20 @@ public class ZonaServicioImpl implements ZonaServicio {
             strCapacidad = "L";
         }
 
-        //Define el número de zona en la BD
-        numeroZona = numeroZona == 0 ? 1L : numeroZona++;
-        String strNumZona = numeroZona > 10 ? numeroZona.toString() : "0"+numeroZona.toString();
+        //Define el número de zona (siguiente secuencial).
+        //Nota: antes usaba `numeroZona++` (post-incremento), que es un no-op al
+        //auto-asignarse, y generaba códigos duplicados al crear una segunda zona
+        //del mismo tipo/capacidad -> 500 por clave única.
+        numeroZona = numeroZona + 1;
+        String strNumZona = numeroZona >= 10 ? numeroZona.toString() : "0" + numeroZona;
+        String codigoZona = "ZONA-" + strTipo + "." + strCapacidad + "-" + strNumZona;
 
-        String codigoZona = "ZONA-"+strTipo+"."+strCapacidad+"-"+strNumZona;
+        //Garantiza unicidad ante posibles eliminaciones previas de zonas.
+        while (zonaRepositorio.existsByCodigo(codigoZona)) {
+            numeroZona++;
+            strNumZona = numeroZona >= 10 ? numeroZona.toString() : "0" + numeroZona;
+            codigoZona = "ZONA-" + strTipo + "." + strCapacidad + "-" + strNumZona;
+        }
 
         return codigoZona;
     }

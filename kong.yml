@@ -101,7 +101,7 @@ services:
                   ["X-Original-Method"] = method,
                   ["X-Original-Path"] = path,
                 },
-                timeout = 3000,
+                timeout = 10000,
               })
 
               if not res then
@@ -209,7 +209,7 @@ services:
                   ["X-Original-Method"] = method,
                   ["X-Original-Path"] = path,
                 },
-                timeout = 3000,
+                timeout = 10000,
               })
 
               if not res then
@@ -306,7 +306,7 @@ services:
                   ["X-Original-Method"] = method,
                   ["X-Original-Path"] = path,
                 },
-                timeout = 3000,
+                timeout = 10000,
               })
 
               if not res then
@@ -403,7 +403,7 @@ services:
                   ["X-Original-Method"] = method,
                   ["X-Original-Path"] = path,
                 },
-                timeout = 3000,
+                timeout = 10000,
               })
 
               if not res then
@@ -508,7 +508,7 @@ services:
                   ["X-Original-Method"] = method,
                   ["X-Original-Path"] = path,
                 },
-                timeout = 3000,
+                timeout = 10000,
               })
 
               if not res then
@@ -609,7 +609,7 @@ services:
                   ["X-Original-Method"] = method,
                   ["X-Original-Path"] = path,
                 },
-                timeout = 3000,
+                timeout = 10000,
               })
 
               if not res then
