@@ -3,8 +3,12 @@ venv/
 .venv/
 env/
 
+myvenv/
+
 # Archivos compilados (se generan automáticamente)
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+.pytest_cache/

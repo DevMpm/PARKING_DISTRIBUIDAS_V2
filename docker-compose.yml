@@ -311,6 +311,10 @@ services:
       RABBITMQ_ROUTING_KEY: audit.event
       THROTTLE_TTL: 60000
       THROTTLE_LIMIT: 100
+      USUARIOS_INTERNAL_URL: http://gestion-usuarios:3001/api/usuarios
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      AUTHZ_EXCHANGE: ${AUTHZ_EXCHANGE}
+      PUBLIC_KEY_URL: ${PUBLIC_KEY_URL}
     depends_on:
       db-audit:
         condition: service_healthy

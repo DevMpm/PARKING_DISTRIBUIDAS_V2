@@ -14,3 +14,7 @@ Vehiculos:
  DTOs: VehiclesNPM/vehiculos/src/vehiculos/dto
  Controllers: VehiclesNPM/vehiculos/src/vehiculos/vehiculos.controller.ts
  Servicios: VehiclesNPM/vehiculos/src/vehiculos/vehiculos.service.ts
+Asignaciones:
+ Entidades: assignment-service/src/asignaciones/entities
+ DTOs: assignment-service/src/asignaciones/dto
+ Servicios: assignment-service/src/asignaciones/asignaciones.service.ts

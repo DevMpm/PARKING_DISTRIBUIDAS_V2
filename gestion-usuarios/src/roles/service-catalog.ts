@@ -14,6 +14,7 @@ export const SERVICE_IDS = {
   VEHICULOS: 'vehiculos-service',
   ASIGNACIONES: 'assignment-service',
   USUARIOS: 'usuarios-service',
+  AUDITORIA: 'auditoria-service'
 } as const;
 
 export type ServiceId = (typeof SERVICE_IDS)[keyof typeof SERVICE_IDS];
@@ -27,7 +28,7 @@ const PREFIX_TO_SERVICE: Record<string, ServiceId> = {
   USUARIOS: SERVICE_IDS.USUARIOS,
   ROLES: SERVICE_IDS.USUARIOS,
   ROLEUSERS: SERVICE_IDS.USUARIOS,
-  AUDITORIA: SERVICE_IDS.USUARIOS,
+  AUDITORIA: SERVICE_IDS.AUDITORIA
 };
 
 /**

@@ -16,6 +16,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
 
   const config = new DocumentBuilder()
+  .addBearerAuth()
   .setTitle('Servicio Auditoria')
   .setDescription('Descripción de la API y los endpoints para el servicio de auditoría.')
   .setVersion('1.0')
