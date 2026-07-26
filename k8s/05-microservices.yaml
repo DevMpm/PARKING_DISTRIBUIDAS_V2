@@ -1,0 +1,347 @@
+# ══════════════════════════════════════════════════════════════════
+#  6 microservicios. Cada uno: Deployment + Service (ClusterIP).
+#  - envFrom: inyecta las variables COMUNES del ConfigMap parking-config.
+#  - env: variables específicas de cada servicio (BD, colas, URLs).
+#  - Las imágenes se construyen dentro de Minikube (ver GUIA_KUBERNETES.md §6),
+#    por eso imagePullPolicy: IfNotPresent.
+# ══════════════════════════════════════════════════════════════════
+
+# ─────────────────────── zonas (Spring Boot) ───────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zonas
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zonas
+  template:
+    metadata:
+      labels:
+        app: zonas
+    spec:
+      containers:
+        - name: zonas
+          image: parking/zonas:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef: { name: parking-config }
+          env:
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:postgresql://db-zonas:5432/test" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "postgres" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "12345" }
+            - { name: AUDIT_EXCHANGE, value: "audit_exchange" }
+            - { name: AUDIT_ROUTING_KEY, value: "audit.event" }
+            - { name: RABBITMQ_QUEUE, value: "audit_queue" }           # ajusta según tu .env si aplica
+            - { name: RABBITMQ_EXCHANGE, value: "audit_exchange" }     # ajusta según tu .env si aplica
+            - { name: RABBITMQ_ROUTING_KEY, value: "audit.event" }     # ajusta según tu .env si aplica
+            - { name: USUARIOS_INTERNAL_URL, value: "http://gestion-usuarios:3001/api/usuarios" }
+            - { name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY, value: "WARN" }
+            - name: INTERNAL_API_KEY
+              valueFrom: { secretKeyRef: { name: parking-secret, key: INTERNAL_API_KEY } }
+          resources:
+            requests: { cpu: "100m", memory: "256Mi" }
+            limits:   { cpu: "1000m", memory: "768Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zonas
+  namespace: parking-ns
+spec:
+  selector:
+    app: zonas
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+# ─────────────────────── vehiculos (NestJS) ───────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vehiculos
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vehiculos
+  template:
+    metadata:
+      labels:
+        app: vehiculos
+    spec:
+      containers:
+        - name: vehiculos
+          image: parking/vehiculos:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef: { name: parking-config }
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: DB_HOST, value: "db-vehiculos" }
+            - { name: DB_PORT, value: "5432" }
+            - { name: DB_USUARIO, value: "vehiculos" }
+            - { name: DB_CONTRASENA, value: "vehiculos" }
+            - { name: DB_NOMBRE, value: "vehiculos" }
+            - { name: ZONAS_SERVICE_URL, value: "http://kong:8000/api/v1/zonas" }
+            - { name: GESTION_USUARIOS_URL, value: "http://kong:8000/api/usuarios" }
+            - { name: USUARIOS_INTERNAL_URL, value: "http://gestion-usuarios:3001/api/usuarios" }
+            - { name: RABBITMQ_QUEUE, value: "audit_queue" }
+            - { name: RABBITMQ_EXCHANGE, value: "audit_exchange" }
+            - { name: RABBITMQ_ROUTING_KEY, value: "audit.event" }
+            - name: INTERNAL_API_KEY
+              valueFrom: { secretKeyRef: { name: parking-secret, key: INTERNAL_API_KEY } }
+          resources:
+            requests: { cpu: "50m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vehiculos
+  namespace: parking-ns
+spec:
+  selector:
+    app: vehiculos
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP
+---
+# ─────────────────────── gestion-usuarios (NestJS / Auth) ───────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gestion-usuarios
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gestion-usuarios
+  template:
+    metadata:
+      labels:
+        app: gestion-usuarios
+    spec:
+      containers:
+        - name: gestion-usuarios
+          image: parking/gestion-usuarios:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - configMapRef: { name: parking-config }
+          env:
+            - { name: PORT, value: "3001" }
+            - { name: DB_HOST, value: "db-usuarios" }
+            - { name: DB_PORT, value: "5432" }
+            - { name: DB_USUARIO, value: "usuarios" }
+            - { name: DB_CONTRASENA, value: "usuarios" }
+            - { name: DB_NOMBRE, value: "usuarios" }
+            - { name: ROOT_USER_NAME, value: "super" }
+            - { name: ROOT_USER_LASTNAME, value: "usuario" }
+            - { name: ROOT_USER_DNI, value: "1728143247" }
+            - { name: RABBITMQ_QUEUE, value: "audit_queue" }
+            - { name: RABBITMQ_EXCHANGE, value: "audit_exchange" }
+            - { name: RABBITMQ_ROUTING_KEY, value: "audit.event" }
+            - name: JWT_PRIVATE_KEY
+              valueFrom: { secretKeyRef: { name: parking-secret, key: JWT_PRIVATE_KEY } }
+            - name: JWT_PUBLIC_KEY
+              valueFrom: { secretKeyRef: { name: parking-secret, key: JWT_PUBLIC_KEY } }
+            - name: INTERNAL_API_KEY
+              valueFrom: { secretKeyRef: { name: parking-secret, key: INTERNAL_API_KEY } }
+          resources:
+            requests: { cpu: "50m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gestion-usuarios
+  namespace: parking-ns
+spec:
+  selector:
+    app: gestion-usuarios
+  ports:
+    - port: 3001
+      targetPort: 3001
+  type: ClusterIP
+---
+# ─────────────────────── ticket-service (Python / FastAPI) ───────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-service
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ticket-service
+  template:
+    metadata:
+      labels:
+        app: ticket-service
+    spec:
+      containers:
+        - name: ticket-service
+          image: parking/ticket-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8002
+          envFrom:
+            - configMapRef: { name: parking-config }
+          env:
+            - { name: DB_HOST, value: "db-tickets" }
+            - { name: DB_PORT, value: "5432" }
+            - { name: DB_NAME, value: "tickets" }
+            - { name: DB_USER, value: "postgres" }
+            - { name: DB_PASSWORD, value: "postgres" }
+            - { name: TARIFA_ESPACIO, value: "1.50" }
+            - { name: TARIFA_HORA_MINIMA, value: "1.0" }
+            - { name: ZONAS_URL, value: "http://kong:8000" }
+            - { name: VEHICULOS_URL, value: "http://kong:8000" }
+            - { name: USUARIOS_URL, value: "http://kong:8000" }
+            - { name: ASIGNACIONES_URL, value: "http://kong:8000" }
+            - { name: USUARIOS_INTERNAL_URL, value: "http://gestion-usuarios:3001/api/usuarios" }
+            - { name: RABBITMQ_QUEUE, value: "tickets_queue" }        # ajusta según tu .env (RABBITMQ_QUEUE)
+            - { name: RABBITMQ_EXCHANGE, value: "parking.events" }
+            - { name: RABBITMQ_ROUTING_KEY, value: "ticket.#" }
+            - { name: AUDIT_EXCHANGE, value: "audit_exchange" }
+            - { name: AUDIT_ROUTING_KEY, value: "audit.event" }
+            - name: INTERNAL_API_KEY
+              valueFrom: { secretKeyRef: { name: parking-secret, key: INTERNAL_API_KEY } }
+          resources:
+            requests: { cpu: "50m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ticket-service
+  namespace: parking-ns
+spec:
+  selector:
+    app: ticket-service
+  ports:
+    - port: 8002
+      targetPort: 8002
+  type: ClusterIP
+---
+# ─────────────────────── assignment-service (Node) ───────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assignment-service
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assignment-service
+  template:
+    metadata:
+      labels:
+        app: assignment-service
+    spec:
+      containers:
+        - name: assignment-service
+          image: parking/assignment-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3002
+          envFrom:
+            - configMapRef: { name: parking-config }
+          env:
+            - { name: PORT, value: "3002" }
+            - { name: DB_HOST, value: "db-asignaciones" }
+            - { name: DB_PORT, value: "5432" }
+            - { name: DB_USUARIO, value: "asignaciones" }
+            - { name: DB_CONTRASENA, value: "asignaciones" }
+            - { name: DB_NOMBRE, value: "asignaciones" }
+            - { name: GESTION_USUARIOS_URL, value: "http://kong:8000/api/usuarios" }
+            - { name: USUARIOS_INTERNAL_URL, value: "http://gestion-usuarios:3001/api/usuarios" }
+            - { name: VEHICULOS_SERVICE_URL, value: "http://kong:8000/api/vehiculos" }
+            - { name: RABBITMQ_QUEUE, value: "audit_queue" }
+            - { name: RABBITMQ_EXCHANGE, value: "audit_exchange" }
+            - { name: RABBITMQ_ROUTING_KEY, value: "audit.event" }
+            - name: INTERNAL_API_KEY
+              valueFrom: { secretKeyRef: { name: parking-secret, key: INTERNAL_API_KEY } }
+          resources:
+            requests: { cpu: "50m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: assignment-service
+  namespace: parking-ns
+spec:
+  selector:
+    app: assignment-service
+  ports:
+    - port: 3002
+      targetPort: 3002
+  type: ClusterIP
+---
+# ─────────────────────── audit-service (NestJS) ───────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audit-service
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audit-service
+  template:
+    metadata:
+      labels:
+        app: audit-service
+    spec:
+      containers:
+        - name: audit-service
+          image: parking/audit-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3003
+          envFrom:
+            - configMapRef: { name: parking-config }
+          env:
+            - { name: PORT, value: "3003" }
+            - { name: DB_HOST, value: "db-audit" }
+            - { name: DB_PORT, value: "5432" }
+            - { name: DB_USER, value: "audit" }
+            - { name: DB_PASSWORD, value: "audit" }
+            - { name: DB_NAME, value: "auditoria" }
+            - { name: RABBITMQ_QUEUE, value: "audit_queue" }
+            - { name: RABBITMQ_EXCHANGE, value: "audit_exchange" }
+            - { name: RABBITMQ_ROUTING_KEY, value: "audit.event" }
+            - { name: THROTTLE_TTL, value: "60000" }
+            - { name: THROTTLE_LIMIT, value: "100" }
+          resources:
+            requests: { cpu: "50m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: audit-service
+  namespace: parking-ns
+spec:
+  selector:
+    app: audit-service
+  ports:
+    - port: 3003
+      targetPort: 3003
+  type: ClusterIP

@@ -1,0 +1,58 @@
+# NOTA: el ConfigMap con la configuración declarativa de Kong (kong.yml) NO se
+# incluye aquí porque se genera desde el archivo real del proyecto. Antes de
+# aplicar este manifiesto, ejecuta desde la raíz del proyecto:
+#
+#   kubectl create configmap kong-config --from-file=kong.yml=./kong.yml -n parking-ns
+#
+# (o el comando equivalente que está en k8s/README.md)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kong
+  template:
+    metadata:
+      labels:
+        app: kong
+    spec:
+      containers:
+        - name: kong
+          image: kong:latest
+          env:
+            - { name: KONG_DATABASE, value: "off" }
+            - { name: KONG_DECLARATIVE_CONFIG, value: "/opt/kong/kong.yml" }
+            - { name: KONG_PROXY_ACCESS_LOG, value: "/dev/stdout" }
+            - { name: KONG_ADMIN_ACCESS_LOG, value: "/dev/stdout" }
+            - { name: KONG_PROXY_ERROR_LOG, value: "/dev/stderr" }
+            - { name: KONG_ADMIN_ERROR_LOG, value: "/dev/stderr" }
+            - { name: KONG_ADMIN_LISTEN, value: "0.0.0.0:8001" }
+            - { name: KONG_UNTRUSTED_LUA_SANDBOX_REQUIRES, value: "resty.http,cjson.safe" }
+            - { name: KONG_NGINX_WORKER_PROCESSES, value: "2" }
+          ports:
+            - containerPort: 8000   # Proxy (punto de entrada de la API)
+            - containerPort: 8001   # Admin API
+          volumeMounts:
+            - name: kong-config
+              mountPath: /opt/kong
+      volumes:
+        - name: kong-config
+          configMap:
+            name: kong-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong
+  namespace: parking-ns
+spec:
+  selector:
+    app: kong
+  ports:
+    - { name: proxy, port: 8000, targetPort: 8000 }
+    - { name: admin, port: 8001, targetPort: 8001 }
+  type: ClusterIP

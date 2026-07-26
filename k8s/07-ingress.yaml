@@ -1,0 +1,32 @@
+# Punto de entrada público único.
+#  - /api/...  → Kong (API Gateway), que reparte a cada microservicio
+#  - resto     → frontend (SPA React)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: parking-ingress
+  namespace: parking-ns
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: parking.local
+      http:
+        paths:
+          # Todo lo que empiece por /api va a Kong (conserva el prefijo /api)
+          - path: /(api/.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: kong
+                port:
+                  number: 8000
+          # El resto va al frontend
+          - path: /(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

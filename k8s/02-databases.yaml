@@ -1,0 +1,347 @@
+# ══════════════════════════════════════════════════════════════════
+#  6 bases de datos PostgreSQL. Cada una: PVC + Deployment + Service.
+#  El Service se llama igual que en docker-compose para que el DNS
+#  interno coincida (ej. db-zonas:5432).
+# ══════════════════════════════════════════════════════════════════
+
+# ─────────────────────── db-zonas ───────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-zonas-pvc
+  namespace: parking-ns
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-zonas
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-zonas
+  template:
+    metadata:
+      labels:
+        app: db-zonas
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - { name: POSTGRES_USER, value: "postgres" }
+            - { name: POSTGRES_PASSWORD, value: "12345" }
+            - { name: POSTGRES_DB, value: "test" }
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: db-zonas-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-zonas
+  namespace: parking-ns
+spec:
+  selector:
+    app: db-zonas
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+# ─────────────────────── db-vehiculos ───────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-vehiculos-pvc
+  namespace: parking-ns
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-vehiculos
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-vehiculos
+  template:
+    metadata:
+      labels:
+        app: db-vehiculos
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - { name: POSTGRES_USER, value: "vehiculos" }
+            - { name: POSTGRES_PASSWORD, value: "vehiculos" }
+            - { name: POSTGRES_DB, value: "vehiculos" }
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: db-vehiculos-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-vehiculos
+  namespace: parking-ns
+spec:
+  selector:
+    app: db-vehiculos
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+# ─────────────────────── db-usuarios ───────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-usuarios-pvc
+  namespace: parking-ns
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-usuarios
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-usuarios
+  template:
+    metadata:
+      labels:
+        app: db-usuarios
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - { name: POSTGRES_USER, value: "usuarios" }
+            - { name: POSTGRES_PASSWORD, value: "usuarios" }
+            - { name: POSTGRES_DB, value: "usuarios" }
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: db-usuarios-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-usuarios
+  namespace: parking-ns
+spec:
+  selector:
+    app: db-usuarios
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+# ─────────────────────── db-tickets ───────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-tickets-pvc
+  namespace: parking-ns
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-tickets
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-tickets
+  template:
+    metadata:
+      labels:
+        app: db-tickets
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - { name: POSTGRES_USER, value: "postgres" }
+            - { name: POSTGRES_PASSWORD, value: "postgres" }
+            - { name: POSTGRES_DB, value: "tickets" }
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: db-tickets-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-tickets
+  namespace: parking-ns
+spec:
+  selector:
+    app: db-tickets
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+# ─────────────────────── db-asignaciones ───────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-asignaciones-pvc
+  namespace: parking-ns
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-asignaciones
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-asignaciones
+  template:
+    metadata:
+      labels:
+        app: db-asignaciones
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - { name: POSTGRES_USER, value: "asignaciones" }
+            - { name: POSTGRES_PASSWORD, value: "asignaciones" }
+            - { name: POSTGRES_DB, value: "asignaciones" }
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: db-asignaciones-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-asignaciones
+  namespace: parking-ns
+spec:
+  selector:
+    app: db-asignaciones
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+# ─────────────────────── db-audit ───────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-audit-pvc
+  namespace: parking-ns
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-audit
+  namespace: parking-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-audit
+  template:
+    metadata:
+      labels:
+        app: db-audit
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - { name: POSTGRES_USER, value: "audit" }
+            - { name: POSTGRES_PASSWORD, value: "audit" }
+            - { name: POSTGRES_DB, value: "auditoria" }
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: db-audit-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-audit
+  namespace: parking-ns
+spec:
+  selector:
+    app: db-audit
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
