@@ -256,3 +256,60 @@ Considera los siguientes aspectos:
 Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes modificarlas para forzar a que aprueben, solo comunícamelas en el @test_log.txt. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
 
 Como estoy manejando pruebas unitarias "sociales", trabaja sobre los archivos ".e2e-spec.ts" en la carpeta test. 
+
+--------------Asignaciones Plan ------------------
+
+Con base en la siguiente estructura y guía, crea una lista de casos de prueba "CP" para el módulo de asignaciones en la carpeta @assignment-service/src/asignaciones
+- Los casos de prueba corresponderán a pruebas de estilo REST sobre los diferentes endpoints en el archivo @assignment-service/src/asignaciones/asignaciones.controller.ts
+
+- Puedes revisar la lógica de todo el módulo de asignaciones, @assignment-service/src. Sin embargo, te recomiendo seguir esta estructura para definir los casos:
+
+Endpoints/Operaciones Create
+
+- CP Crear ok → Verificar 200, Respuesta con datos correctos, Buscar por Id para confirmar creación.
+- CP Crear duplicado - Verificar 409 y mensaje de error.
+- CP datos inválidos, Maneja al menos un caso por campo y constraint del DTO. → Verificar 400 y mensaje de error.
+
+Endpoints/Operaciones Get que devuelven varios resultados.
+
+- CP Buscar ok → Verificar 200 y cantidad de registros obtenidos en la consulta.
+(Si buscan por un parámetro también va este caso:)
+- CP Buscar sin resultados → Verificar 200 y cantidad de registros obtenidos (0).
+
+Endpoints/Operaciones Get que devuelven un único resultado.
+
+- CP Buscar ok → Verificar 200, Datos de la respuesta coinciden con parámetro de búsqueda.
+- CP Buscar sin resultado → Verificar 404 y mensaje de error.
+
+Endpoints/Operaciones de actualizar (UPDATE, PATCH)
+
+- CP actualizar ok → Verificar 200, Datos de respuesta coinciden, Buscar por Id para confirmar el cambio.
+- CP not found → Verificar 404 y mensaje de error.
+- CP datos inválidos, al menos un caso por constraint del dto. → Verificar 400 y mensaje de error.
+
+Endpoints/Operaciones de eliminar
+
+- CP eliminar ok → Verificar 200, Buscar por Id para confirmar not found o cambio de estado si es eliminación lógica.
+- CP eliminar not found → Verificar 404 y mensaje de error.  
+
+Toma como referencia los archivos ya existentes en @/pruebas_unitarias con los nombres que comienzan en "cp_" para la elaboración de los casos y sigue su nomenclatura y estructura: Precondiciones, Entrada y Verificar. 
+
+Genera únicamente la lista de casos en el archivo "cp_asignaciones" en la carpeta @pruebas_unitarias/, aún no escribas código de pruebas.
+
+-------------------- Asignaciones -----------------------------
+Con base en el archivo @/puebas_unitarias/cp_asingaciones.txt, crea e implementa las pruebas unitarias sociables en NestJS que permitan probar el modulo de asignaciones desde un punto de vista REST en modo (controlador real → servicio real → mock datasource).
+Considera los siguientes aspectos:
+- Como los endpoints están protegidos por JWT, puedes trabajar con un mock que cuente con los permisos necesarios, para que el control pase. Revisa los archivos de controlador en la carpeta @assignment-service/src/asignaciones y la configuración de seguridad en @assignment-service/src/auth para tener un panorama completo de como funcionan los flujos de autorización.
+- Para realizar un mock del envío de logs y eventos a rabbitmq revisa la carpeta @assignment-service/src/audit.
+- Puedes guiarte por los archivos de dto en la carpeta @assignment-service/src/asignaciones/dto,  y por los servicios en el archivo @assignment-service/src/asignaciones/asignaciones.service.ts:
+ para entender las validaciones, mensajes de error y lógica que manejan, pero no puedes modificarlos. 
+- Puedes usar los servicios para acciones que formen parte de las verificaciones o Precondiciones, como crear zonas, espacios o hacer una búsqueda.
+- Si es necesario agregar dependencias al módulo @assignment-service puedes hacerlo, pero no puedes manipular dependencias ya existentes. Tampoco puedes modificar otros archivos que no sean los e2e-spec.ts sin permiso. Si lo consideras necesario, indícame la razón y yo revisaré antes de autorizarlo. Si detectas un cambio que no hayas realizado, es un cambio hecho por mí, entonces no debes quitarlo.
+- Para las pruebas, si lo necesitas, configura un testcontainer, revisa la configuración de pruebas en @gestion-usuarios/test y usa los archivos e2e-spec.ts ya existentes como referencia.
+- No olvides incluir los casos adicionales o sub-casos de prueba, se escriben con la palabra clave "CP". 
+- Para las operaciones que consumen otros servicios, puedes revisar las referencias en @pruebas_unitarias/archivos_entidades_dtos.txt
+- Al final de las pruebas, como verificación revisa la generación del log de auditoría para enviar al mock.
+
+Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes modificarlas para forzar a que aprueben, solo comunícamelas en el @test_log.txt. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
+
+Como estoy manejando pruebas unitarias "sociales", trabaja sobre los archivos ".e2e-spec.ts" en la carpeta test. 

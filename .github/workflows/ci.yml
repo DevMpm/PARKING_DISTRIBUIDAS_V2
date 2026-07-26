@@ -41,6 +41,7 @@ jobs:
     name: Test NestJS Microservices
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         service: [gestion-usuarios, assignment-service, VehiclesNPM/vehiculos]
     steps:
