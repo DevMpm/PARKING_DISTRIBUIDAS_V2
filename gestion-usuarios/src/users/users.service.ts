@@ -122,7 +122,7 @@ export class UsersService {
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    const user =  this.userRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: { username },
       relations: { persona: true },
     });
