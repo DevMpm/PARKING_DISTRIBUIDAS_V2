@@ -32,11 +32,10 @@ jobs:
         run: mvn clean test jacoco:report # Ajusta si usas Gradle: ./gradlew test jacocoTestReport
 
       - name: Upload JaCoCo Coverage Artifact
-        working-directory: ./ModuloZonas
         uses: actions/upload-artifact@v4
         with:
           name: coverage-jacoco
-          path: target/site/jacoco/ # Ajusta si usas Gradle: build/reports/jacoco/test/html/
+          path: ./target/site/jacoco/ # Ajusta si usas Gradle: build/reports/jacoco/test/html/
           retention-days: 1
 
   test-node:
