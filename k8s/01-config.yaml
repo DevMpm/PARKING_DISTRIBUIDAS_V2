@@ -15,7 +15,7 @@ data:
   # Autorización / Gateway / clave pública JWT
   AUTHZ_EXCHANGE: "authz_exchange"
   KONG_URL: "http://kong:8000"
-  PUBLIC_KEY_URL: "http://gestion-usuarios:3001/api/auth/public-key"
+  PUBLIC_KEY_URL: "http://gestion-usuarios:3001/api/usuarios/auth/jwks"
 ---
 # Valores sensibles. REEMPLAZA los placeholders con los valores reales de tu archivo .env
 apiVersion: v1
