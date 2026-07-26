@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module';
 import { DataSource } from 'typeorm';
 import { Persona } from '../src/personas/entities/persona.entity';
 import { User } from '../src/users/entities/user.entity';
+import { UserRole } from '../src/roleusers/entities/roleuser.entity';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../src/auth/guards/permissions.guard';
 import * as bcrypt from 'bcrypt';
@@ -48,12 +49,29 @@ describe('PersonasController (Sociable - Testcontainers)', () => {
 
   beforeEach(async () => {
     if (dataSource) {
-      try {
-        await dataSource.getRepository(User).clear();
-        await dataSource.getRepository(Persona).clear();
-      } catch {}
-
       const personaRepo = dataSource.getRepository(Persona);
+      const userRepo = dataSource.getRepository(User);
+      const userRoleRepo = dataSource.getRepository(UserRole);
+
+      const usersToDelete = await userRepo.find({
+        where: [
+          { username: 'jperez' },
+        ],
+      });
+      for (const u of usersToDelete) {
+        await userRoleRepo.delete({ id_user: u.id });
+        await userRepo.delete({ id: u.id });
+      }
+
+      await personaRepo.delete({ id: PERSONA_UUID_1 });
+      await personaRepo.delete({ id: PERSONA_UUID_2 });
+      await personaRepo.delete({ dni: '1720000015' });
+      await personaRepo.delete({ dni: '1720000007' });
+      await personaRepo.delete({ dni: '1720000023' });
+      await personaRepo.delete({ email: 'juan.perez@example.com' });
+      await personaRepo.delete({ email: 'other@example.com' });
+      await personaRepo.delete({ email: 'juan.nuevo@example.com' });
+      await personaRepo.delete({ email: 'juan.updated@example.com' });
       const persona = personaRepo.create({
         id: PERSONA_UUID_1,
         dni: '1720000015',

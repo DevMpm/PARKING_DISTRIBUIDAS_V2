@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module';
 import { DataSource } from 'typeorm';
 import { User } from '../src/users/entities/user.entity';
 import { Persona } from '../src/personas/entities/persona.entity';
+import { UserRole } from '../src/roleusers/entities/roleuser.entity';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../src/auth/guards/permissions.guard';
 import * as bcrypt from 'bcrypt';
@@ -63,13 +64,24 @@ describe('UsersController (Sociable - Testcontainers)', () => {
     };
 
     if (dataSource) {
-      try {
-        await dataSource.getRepository(User).clear();
-        await dataSource.getRepository(Persona).clear();
-      } catch {}
-
       const personaRepo = dataSource.getRepository(Persona);
       const userRepo = dataSource.getRepository(User);
+      const userRoleRepo = dataSource.getRepository(UserRole);
+
+      const usersToDelete = await userRepo.find({
+        where: [
+          { id: TEST_USER_ID },
+          { username: 'jperez' },
+          { username: 'jperezupdate' },
+        ],
+      });
+      for (const u of usersToDelete) {
+        await userRoleRepo.delete({ id_user: u.id });
+        await userRepo.delete({ id: u.id });
+      }
+
+      await personaRepo.delete({ id: TEST_PERSONA_ID });
+      await personaRepo.delete({ dni: '1720000015' });
 
       const persona = personaRepo.create({
         id: TEST_PERSONA_ID,
