@@ -1,0 +1,321 @@
+Módulo de Personas (/personas)
+
+Operación Create (POST /personas)
+
+CP1.1 Crear persona ok
+Precondiciones: Token JWT con permisos suficientes (o acceso público según configuración del endpoint)
+Entrada: JSON con datos válidos de persona (address: "Av. 10 de Agosto", dni: "1712345678", email: "juan.perez@example.com", firstName: "Juan", lastName: "Pérez", nationality: "Ecuatoriana", phone: "+593991234567")
+Verificar:
+1. Código de respuesta 201
+2. Respuesta DTO con datos correctos de la persona creada.
+3. Buscar por Id (GET /personas/:id) para confirmar su existencia.
+
+CP1.2 Crear persona duplicada (DNI o email)
+Precondiciones: Token JWT y una persona previamente registrada con DNI "1712345678" o email "juan.perez@example.com".
+Entrada: JSON repitiendo el DNI o email existente.
+Verificar:
+1. Código de respuesta 409
+2. Mensaje de error indicando conflicto (DNI o email ya existente).
+
+CP1.3.1 Crear persona - DNI vacío o ausente
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con dni omitido o vacío ("").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el DNI es obligatorio.
+
+CP1.3.2 Crear persona - DNI longitud menor a 10 dígitos
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con dni de 9 dígitos ("171234567").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la cédula ecuatoriana debe tener 10 dígitos.
+
+CP1.3.3 Crear persona - DNI longitud mayor a 10 dígitos
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con dni de 11 dígitos ("17123456789").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la cédula ecuatoriana debe tener 10 dígitos.
+
+CP1.3.4 Crear persona - DNI con caracteres no numéricos
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con dni que contiene letras o símbolos ("171234567A").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el DNI.
+
+CP1.3.5 Crear persona - DNI con dígito verificador ecuatoriano inválido
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con 10 dígitos numéricos pero inválidos según el algoritmo de cédula ecuatoriana ("1799999999").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación del DNI ecuatoriano.
+
+CP1.3.6 Crear persona - Email vacío o ausente
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con email omitido o vacío.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el email es obligatorio.
+
+CP1.3.7 Crear persona - Email con formato inválido
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con email sin arroba o dominio ("juan.perez" or "juan@com").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el email no tiene un formato válido.
+
+CP1.3.8 Crear persona - Email excediendo 50 caracteres
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con email mayor a 50 caracteres ("muy.largo.correo.electronico.de.prueba.que.supera.los.cincuenta.caracteres@example.com").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el email no puede tener más de 50 caracteres.
+
+CP1.3.9 Crear persona - Primer nombre vacío o ausente
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con firstName omitido o vacío ("").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el primer nombre es obligatorio.
+
+CP1.3.10 Crear persona - Primer nombre muy corto (< 2 caracteres)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con firstName de 1 carácter ("J").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el primer nombre debe tener al menos 2 caracteres.
+
+CP1.3.11 Crear persona - Primer nombre muy largo (> 30 caracteres)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con firstName de 31 letras.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el primer nombre no puede tener más de 30 caracteres.
+
+CP1.3.12 Crear persona - Primer nombre con números o símbolos
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con firstName conteniendo dígitos o símbolos ("Juan123" or "Juan!").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el primer nombre solo puede contener letras y espacios.
+
+CP1.3.13 Crear persona - Primer nombre con solo espacios
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con firstName de espacios en blanco ("   ").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el nombre no puede estar vacío o ser solo espacios.
+
+CP1.3.14 Crear persona - Apellido vacío o ausente
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con lastName omitido o vacío.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el apellido es obligatorio.
+
+CP1.3.15 Crear persona - Apellido muy corto (< 2 caracteres)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con lastName de 1 carácter ("P").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el apellido debe tener al menos 2 caracteres.
+
+CP1.3.16 Crear persona - Apellido muy largo (> 30 caracteres)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con lastName de 31 letras.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el apellido no puede tener más de 30 caracteres.
+
+CP1.3.17 Crear persona - Apellido con números o símbolos
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con lastName conteniendo números o símbolos ("Pérez123").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el apellido solo puede contener letras y espacios.
+
+CP1.3.18 Crear persona - Segundo nombre inválido (más de 30 caracteres, números o símbolos)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con middleName inválido (ej. "Carlos123" o un string > 30 caracteres).
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el segundo nombre.
+
+CP1.3.19 Crear persona - Nacionalidad vacía o ausente
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con nationality omitida o vacía.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la nacionalidad es obligatoria.
+
+CP1.3.20 Crear persona - Nacionalidad muy corta (< 3 caracteres)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con nationality de 2 caracteres ("Ec").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la nacionalidad no puede tener menos de 3 caracteres.
+
+CP1.3.21 Crear persona - Nacionalidad muy larga (> 30 caracteres)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con nationality de 31 caracteres.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la nacionalidad no puede tener más de 30 caracteres.
+
+CP1.3.22 Crear persona - Nacionalidad con números o símbolos no permitidos
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con nationality conteniendo números ("Ecuatoriana123").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la nacionalidad solo puede contener espacios y letras.
+
+CP1.3.23 Crear persona - Teléfono vacío o ausente
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con phone omitido o vacío.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el teléfono es obligatorio.
+
+CP1.3.24 Crear persona - Teléfono muy corto (< 5 dígitos)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con phone de 4 dígitos ("1234").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el número de teléfono no puede tener menos de 5 dígitos.
+
+CP1.3.25 Crear persona - Teléfono muy largo (> 17 caracteres)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con phone de 18 caracteres ("+59399123456789012").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el teléfono no puede tener más de 17 dígitos.
+
+CP1.3.26 Crear persona - Teléfono con formato inválido (letras)
+Precondiciones: Token JWT con permisos suficientes
+Entrada: JSON con phone conteniendo letras ("+593ABC4567").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el teléfono solo puede contener números, espacios, + y -.
+
+Obtener Personas (Múltiples resultados)
+
+CP2.1 Listar personas ok
+Precondiciones: Token JWT con rol y permiso USUARIOS_READ, y personas registradas en el sistema.
+Entrada: Ninguna (GET /personas)
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros obtenidos en el array acorde al total existente.
+
+Obtener Persona Única
+
+CP3.1 Obtener persona por ID ok
+Precondiciones: Token JWT con rol y permiso USUARIOS_READ, y una persona creada.
+Entrada: UUID válido de la persona como parámetro (GET /personas/:id)
+Verificar:
+1. Código de respuesta 200
+2. Datos de la respuesta coinciden con la persona buscada.
+
+CP3.2 Obtener persona por ID not found
+Precondiciones: Token JWT con rol y permiso USUARIOS_READ.
+Entrada: UUID inexistente como parámetro.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error indicando que la persona no fue encontrada.
+
+CP4.1 Verificar si persona existe (Existe)
+Precondiciones: Persona creada en el sistema.
+Entrada: UUID válido existente en GET /personas/exists/:id
+Verificar:
+1. Código de respuesta 200
+2. Respuesta JSON con { exists: true }.
+
+CP4.2 Verificar si persona existe (No existe)
+Precondiciones: Ninguna.
+Entrada: UUID inexistente en GET /personas/exists/:id
+Verificar:
+1. Código de respuesta 200
+2. Respuesta JSON con { exists: false }.
+
+CP5.1 Obtener persona por DNI ok
+Precondiciones: Token JWT con rol y permiso USUARIOS_READ, y una persona creada.
+Entrada: DNI válido de 10 dígitos como parámetro (GET /personas/dni/:dni)
+Verificar:
+1. Código de respuesta 200
+2. Datos de la respuesta coinciden con el DNI consultado.
+
+CP5.2 Obtener persona por DNI not found
+Precondiciones: Token JWT con rol y permiso USUARIOS_READ.
+Entrada: DNI no registrado en el sistema.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error de persona no encontrada.
+
+Actualizar Personas (UPDATE, PATCH)
+
+CP6.1 Actualizar persona ok
+Precondiciones: Token JWT con rol y permiso USUARIOS_UPDATE, y una persona creada.
+Entrada: UUID de la persona como parámetro y DTO con campos actualizados válidos (ej. teléfono o email).
+Verificar:
+1. Código de respuesta 200
+2. DTO de respuesta con los datos actualizados correctamente.
+3. Buscar por Id (GET /personas/:id) para confirmar el cambio en la base de datos.
+
+CP6.2 Actualizar persona not found
+Precondiciones: Token JWT con rol y permiso USUARIOS_UPDATE.
+Entrada: UUID inexistente y DTO válido.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error de persona no encontrada.
+
+CP6.3.1 Actualizar persona - Email inválido
+Precondiciones: Token JWT con rol y permiso USUARIOS_UPDATE, y una persona creada.
+Entrada: DTO de actualización con email con formato inválido.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el email.
+
+CP6.3.2 Actualizar persona - Primer nombre inválido
+Precondiciones: Token JWT con rol y permiso USUARIOS_UPDATE, y una persona creada.
+Entrada: DTO de actualización con firstName con caracteres no permitidos o longitud inválida.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación.
+
+CP6.3.3 Actualizar persona - Teléfono inválido
+Precondiciones: Token JWT con rol y permiso USUARIOS_UPDATE, y una persona creada.
+Entrada: DTO de actualización con phone inválido.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el teléfono.
+
+Eliminar / Desactivar / Activar Personas
+
+CP7.1 Activar persona ok
+Precondiciones: Token JWT con rol y permiso USUARIOS_UPDATE, y una persona previamente desactivada.
+Entrada: UUID de la persona como parámetro (PATCH /personas/activate/:id)
+Verificar:
+1. Código de respuesta 200
+2. Respuesta indicando éxito y confirmación de activación.
+
+CP7.2 Activar persona not found
+Precondiciones: Token JWT con rol y permiso USUARIOS_UPDATE.
+Entrada: UUID inexistente en PATCH /personas/activate/:id
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
+
+CP8.1 Desactivar persona ok (Borrado lógico)
+Precondiciones: Token JWT con rol y permiso USUARIOS_DELETE, y una persona activa.
+Entrada: UUID de la persona como parámetro (PATCH /personas/deactivate/:id)
+Verificar:
+1. Código de respuesta 200
+2. Respuesta indicando éxito y cambio de estado a inactivo.
+
+CP8.2 Desactivar persona not found
+Precondiciones: Token JWT con rol y permiso USUARIOS_DELETE.
+Entrada: UUID inexistente en PATCH /personas/deactivate/:id
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.

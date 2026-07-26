@@ -1,0 +1,174 @@
+Módulo de Role-Users (/roleusers)
+
+Asignar Rol a Usuario (POST /roleusers)
+
+CP1.1 Asignar rol a usuario ok
+Precondiciones: Token JWT con permiso ROLEUSERS_CREATE, usuario existente y rol existente.
+Entrada: JSON con datos válidos { "id_user": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "role_name": "ADMIN" }.
+Verificar:
+1. Código de respuesta 201
+2. Respuesta con datos correctos de la asignación creada.
+3. Buscar asignación específica (GET /roleusers/:id_user/:id_role) para confirmar creación.
+
+CP1.2 Asignar rol a usuario duplicado
+Precondiciones: Token JWT con permisos suficientes y asignación ya existente para el usuario y rol.
+Entrada: JSON con id_user y role_name ya asignados previamente.
+Verificar:
+1. Código de respuesta 409
+2. Mensaje de error indicando que la asignación ya existe.
+
+CP1.3.1 Asignar rol - id_user vacío o ausente
+Precondiciones: Token JWT con permisos suficientes.
+Entrada: JSON con id_user vacío ("") o ausente.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el id de usuario es obligatorio.
+
+CP1.3.2 Asignar rol - id_user no es UUID v4 válido
+Precondiciones: Token JWT con permisos suficientes.
+Entrada: JSON con id_user de formato inválido (ej. "123-abc").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que id_user debe ser un UUID v4 válido.
+
+CP1.3.3 Asignar rol - role_name vacío o ausente
+Precondiciones: Token JWT con permisos suficientes.
+Entrada: JSON con role_name vacío ("") o ausente.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el nombre del rol es obligatorio.
+
+CP1.3.4 Asignar rol - role_name no es string
+Precondiciones: Token JWT con permisos suficientes.
+Entrada: JSON con role_name numérico (123).
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el nombre del rol debe ser una cadena de texto.
+
+Obtener Asignaciones Rol-Usuario (GET /roleusers)
+
+CP2.1 Listar asignaciones rol-usuario ok
+Precondiciones: Token JWT con permiso ROLEUSERS_READ y asignaciones registradas.
+Entrada: Ninguna (GET /roleusers).
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros obtenidos en el array.
+
+CP2.2 Listar asignaciones sin resultados
+Precondiciones: Token JWT con permiso ROLEUSERS_READ y base de datos sin asignaciones.
+Entrada: Ninguna (GET /roleusers).
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros (0).
+
+Obtener Roles de un Usuario (GET /roleusers/user/:id_user)
+
+CP3.1 Obtener roles por usuario ok
+Precondiciones: Token JWT con permiso ROLEUSERS_READ y usuario con roles asignados.
+Entrada: UUID válido del usuario como parámetro (GET /roleusers/user/:id_user).
+Verificar:
+1. Código de respuesta 200
+2. Asignaciones del usuario obtenidas correctamente.
+
+CP3.2 Obtener roles por usuario - Usuario not found
+Precondiciones: Token JWT con permiso ROLEUSERS_READ.
+Entrada: UUID de usuario inexistente.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error de usuario no encontrado.
+
+CP3.3 Obtener roles por usuario - UUID inválido
+Precondiciones: Token JWT con permiso ROLEUSERS_READ.
+Entrada: UUID con formato inválido.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error.
+
+Obtener Usuarios por Rol (GET /roleusers/role/:role_name)
+
+CP4.1 Obtener usuarios por nombre de rol ok
+Precondiciones: Token JWT con permiso ROLEUSERS_READ, rol existente con usuarios asignados.
+Entrada: Nombre del rol como parámetro (GET /roleusers/role/ADMIN).
+Verificar:
+1. Código de respuesta 200
+2. Lista de usuarios con el rol obtenida correctamente.
+
+CP4.2 Obtener usuarios por rol - Rol not found / sin resultados
+Precondiciones: Token JWT con permiso ROLEUSERS_READ.
+Entrada: Nombre de rol inexistente.
+Verificar:
+1. Código de respuesta 404 (o 200 con 0 registros)
+2. Mensaje de error o array vacío.
+
+Obtener Asignación Específica (GET /roleusers/:id_user/:id_role)
+
+CP5.1 Obtener asignación específica ok
+Precondiciones: Token JWT con permiso ROLEUSERS_READ y asignación existente.
+Entrada: id_user (UUID) y id_role (UUID) como parámetros.
+Verificar:
+1. Código de respuesta 200
+2. Datos de la respuesta coinciden con la asignación buscada.
+
+CP5.2 Obtener asignación específica not found
+Precondiciones: Token JWT con permiso ROLEUSERS_READ.
+Entrada: id_user y id_role válidos pero sin asignación mutua.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error de asignación no encontrada.
+
+CP5.3 Obtener asignación específica - UUID inválido
+Precondiciones: Token JWT con permiso ROLEUSERS_READ.
+Entrada: Parámetros con formato no UUID.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error.
+
+Activar Asignación Rol-Usuario (PATCH /roleusers/activate/:id_user/:id_role)
+
+CP6.1 Activar asignación ok
+Precondiciones: Token JWT con permiso ROLEUSERS_UPDATE y asignación desactivada.
+Entrada: id_user y id_role válidos como parámetros.
+Verificar:
+1. Código de response 200
+2. Asignación activada exitosamente.
+
+CP6.2 Activar asignación not found
+Precondiciones: Token JWT con permiso ROLEUSERS_UPDATE.
+Entrada: IDs sin asignación existente.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
+
+Desactivar Asignación / Borrado Lógico (PATCH /roleusers/deactivate/:id_user/:id_role)
+
+CP7.1 Desactivar asignación ok
+Precondiciones: Token JWT con permiso ROLEUSERS_DELETE y asignación activa.
+Entrada: id_user y id_role válidos como parámetros.
+Verificar:
+1. Código de respuesta 200
+2. Asignación desactivada exitosamente.
+3. Buscar asignación para confirmar cambio de estado.
+
+CP7.2 Desactivar asignación not found
+Precondiciones: Token JWT con permiso ROLEUSERS_DELETE.
+Entrada: IDs sin asignación existente.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
+
+Eliminar Asignación Permanente (DELETE /roleusers/:id_user/:id_role)
+
+CP8.1 Eliminar asignación ok
+Precondiciones: Token JWT con permiso ROLEUSERS_DELETE y asignación existente.
+Entrada: id_user y id_role válidos como parámetros.
+Verificar:
+1. Código de respuesta 200
+2. Asignación eliminada exitosamente.
+3. Buscar asignación (GET /roleusers/:id_user/:id_role) para confirmar not found (404).
+
+CP8.2 Eliminar asignación not found
+Precondiciones: Token JWT con permiso ROLEUSERS_DELETE.
+Entrada: IDs sin asignación existente.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.

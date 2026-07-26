@@ -1,27 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe, ConflictException, NotFoundException } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
-import { VehiculosController } from './vehiculos.controller';
-import { VehiculosService } from './vehiculos.service';
+import { AppModule } from '../app.module';
+import { DataSource } from 'typeorm';
+import { Vehiculo } from './entities/vehiculo.entity';
+import { PersonasClientService } from './personas-client.service';
+import { EventPublisher } from './event-publisher';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { PermissionsCacheService } from 'src/auth/permissions-cache.service';
-import { REQUEST } from '@nestjs/core';
 import { UpdateVehiculoPipe } from './dto/update-vehiculo.dto';
 
-describe('VehiculosController (REST - CP Vehiculos)', () => {
+describe('VehiculosController (REST - CP Vehiculos Sociable)', () => {
   let app: INestApplication;
-  let vehiculosService: jest.Mocked<VehiculosService>;
+  let dataSource: DataSource;
 
-  const mockVehiculosService = {
-    create: jest.fn(),
-    findAll: jest.fn(),
-    findOne: jest.fn(),
-    findByPlaca: jest.fn(),
-    findByPropietario: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
-    reactivar: jest.fn(),
+  const mockPersonasClientService = {
+    existePersona: jest.fn().mockResolvedValue(true),
+  };
+
+  const mockEventPublisher = {
+    publish: jest.fn().mockResolvedValue(undefined),
   };
 
   const mockPermissionsCacheService = {
@@ -35,19 +34,14 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      controllers: [VehiculosController],
-      providers: [
-        { provide: VehiculosService, useValue: mockVehiculosService },
-        { provide: PermissionsCacheService, useValue: mockPermissionsCacheService },
-        UpdateVehiculoPipe,
-        {
-          provide: REQUEST,
-          useValue: {
-            params: { id: '123e4567-e89b-12d3-a456-426614174000' },
-          },
-        },
-      ],
+      imports: [AppModule],
     })
+      .overrideProvider(PersonasClientService)
+      .useValue(mockPersonasClientService)
+      .overrideProvider(EventPublisher)
+      .useValue(mockEventPublisher)
+      .overrideProvider(PermissionsCacheService)
+      .useValue(mockPermissionsCacheService)
       .overrideGuard(JwtAuthGuard)
       .useValue({
         canActivate: (context) => {
@@ -72,15 +66,19 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
       }),
     );
     await app.init();
-    vehiculosService = moduleFixture.get(VehiculosService);
+    dataSource = moduleFixture.get<DataSource>(DataSource);
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
+    if (dataSource) {
+      const repository = dataSource.getRepository(Vehiculo);
+      await repository.clear();
+    }
   });
 
   describe('Crear Vehículo (POST /api/vehiculos)', () => {
@@ -99,16 +97,15 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
           capacidadMaletero: 400,
         },
       };
-      const expectedResult = { id: 'uuid-auto', ...dto };
-      vehiculosService.create.mockResolvedValue(expectedResult as any);
 
       const res = await request(app.getHttpServer())
         .post('/api/vehiculos')
         .send(dto)
         .expect(201);
 
-      expect(res.body).toEqual(expectedResult);
-      expect(vehiculosService.create).toHaveBeenCalled();
+      expect(res.body).toHaveProperty('id');
+      expect(res.body.placa).toEqual(dto.datos.placa);
+      expect(res.body.marca).toEqual(dto.datos.marca);
     });
 
     it('CP1.2 Crear vehículo tipo Motocicleta ok -> 201', async () => {
@@ -124,15 +121,14 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
           tipoMoto: 'Deportiva',
         },
       };
-      const expectedResult = { id: 'uuid-moto', ...dto };
-      vehiculosService.create.mockResolvedValue(expectedResult as any);
 
       const res = await request(app.getHttpServer())
         .post('/api/vehiculos')
         .send(dto)
         .expect(201);
 
-      expect(res.body).toEqual(expectedResult);
+      expect(res.body).toHaveProperty('id');
+      expect(res.body.placa).toEqual(dto.datos.placa);
     });
 
     it('CP1.3 Crear vehículo tipo Camioneta ok -> 201', async () => {
@@ -149,15 +145,14 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
           capacidadCarga: 800,
         },
       };
-      const expectedResult = { id: 'uuid-camioneta', ...dto };
-      vehiculosService.create.mockResolvedValue(expectedResult as any);
 
       const res = await request(app.getHttpServer())
         .post('/api/vehiculos')
         .send(dto)
         .expect(201);
 
-      expect(res.body).toEqual(expectedResult);
+      expect(res.body).toHaveProperty('id');
+      expect(res.body.placa).toEqual(dto.datos.placa);
     });
 
     it('CP2. Crear vehículo duplicado -> 409', async () => {
@@ -174,7 +169,11 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
           capacidadMaletero: 400,
         },
       };
-      vehiculosService.create.mockRejectedValue(new ConflictException('Ya existe un vehículo con esa placa'));
+
+      await request(app.getHttpServer())
+        .post('/api/vehiculos')
+        .send(dto)
+        .expect(201);
 
       await request(app.getHttpServer())
         .post('/api/vehiculos')
@@ -458,7 +457,7 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
       const dto = {
         tipo: 'Motocicleta',
         datos: {
-          placa: 'ABC-1234', // formato de auto
+          placa: 'ABC-1234',
           marca: 'Honda',
           modelo: 'CBR',
           color: 'Negro',
@@ -540,32 +539,57 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
 
   describe('Obtener Vehículos (GET /api/vehiculos)', () => {
     it('CP4.1 Obtener todos los vehículos ok -> 200', async () => {
-      const vehiculos = [{ id: '1', placa: 'ABC-1234' }];
-      vehiculosService.findAll.mockResolvedValue(vehiculos as any);
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
 
       const res = await request(app.getHttpServer())
         .get('/api/vehiculos')
         .expect(200);
 
-      expect(res.body).toEqual(vehiculos);
+      expect(res.body.length).toEqual(1);
+      expect(res.body[0].placa).toEqual('ABC-1234');
     });
 
     it('CP4.2 Obtener vehículos por propietario ok -> 200', async () => {
       const propietarioId = '123e4567-e89b-12d3-a456-426614174000';
-      const vehiculos = [{ id: '1', placa: 'ABC-1234', idPropietario: propietarioId }];
-      vehiculosService.findByPropietario.mockResolvedValue(vehiculos as any);
+      const dto = {
+        tipo: 'Auto',
+        idPropietario: propietarioId,
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
 
       const res = await request(app.getHttpServer())
         .get(`/api/vehiculos/propietario/${propietarioId}`)
         .expect(200);
 
-      expect(res.body).toEqual(vehiculos);
+      expect(res.body.length).toEqual(1);
+      expect(res.body[0].idPropietario).toEqual(propietarioId);
     });
 
     it('CP4.3 Obtener vehículos por propietario sin resultados -> 200 (array vacío)', async () => {
       const propietarioId = '123e4567-e89b-12d3-a456-426614174000';
-      vehiculosService.findByPropietario.mockResolvedValue([]);
-
       const res = await request(app.getHttpServer())
         .get(`/api/vehiculos/propietario/${propietarioId}`)
         .expect(200);
@@ -576,21 +600,32 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
 
   describe('Obtener Vehículo (GET /api/vehiculos/:id y /api/vehiculos/placa/:placa)', () => {
     it('CP5.1 Buscar vehículo por ID ok -> 200', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const vehiculo = { id, placa: 'ABC-1234' };
-      vehiculosService.findOne.mockResolvedValue(vehiculo as any);
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
       const res = await request(app.getHttpServer())
         .get(`/api/vehiculos/${id}`)
         .expect(200);
 
-      expect(res.body).toEqual(vehiculo);
+      expect(res.body.id).toEqual(id);
+      expect(res.body.placa).toEqual('ABC-1234');
     });
 
     it('CP5.2 Buscar vehículo por ID no existente -> 404', async () => {
       const id = '123e4567-e89b-12d3-a456-426614174000';
-      vehiculosService.findOne.mockRejectedValue(new NotFoundException('Vehiculo no encontrado'));
-
       await request(app.getHttpServer())
         .get(`/api/vehiculos/${id}`)
         .expect(404);
@@ -598,20 +633,30 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
 
     it('CP5.3 Buscar vehículo por placa ok -> 200', async () => {
       const placa = 'ABC-1234';
-      const vehiculo = { id: '1', placa };
-      vehiculosService.findByPlaca.mockResolvedValue(vehiculo as any);
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa,
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
 
       const res = await request(app.getHttpServer())
         .get(`/api/vehiculos/placa/${placa}`)
         .expect(200);
 
-      expect(res.body).toEqual(vehiculo);
+      expect(res.body.placa).toEqual(placa);
     });
 
     it('CP5.4 Buscar vehículo por placa no existente -> 404', async () => {
       const placa = 'ZZZ-9999';
-      vehiculosService.findByPlaca.mockRejectedValue(new NotFoundException('No existe un vehículo registrado'));
-
       await request(app.getHttpServer())
         .get(`/api/vehiculos/placa/${placa}`)
         .expect(404);
@@ -620,66 +665,86 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
 
   describe('Actualizar Vehículo (PATCH /api/vehiculos/:id)', () => {
     it('CP6.1 Actualizar vehículo Auto ok -> 200', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingAuto = {
-        id,
-        obtenerTipo: () => 'Auto',
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
       };
-      vehiculosService.findOne.mockResolvedValue(existingAuto as any);
-      const updateDto = { numeroPuertas: 2, capacidadMaletero: 500 };
-      const updatedResult = { id, ...updateDto };
-      vehiculosService.update.mockResolvedValue(updatedResult as any);
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
+      const updateDto = { numeroPuertas: 2, capacidadMaletero: 500 };
       const res = await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
         .send(updateDto)
         .expect(200);
 
-      expect(res.body).toEqual(updatedResult);
+      expect(res.body.numeroPuertas).toEqual(2);
+      expect(res.body.capacidadMaletero).toEqual(500);
     });
 
     it('CP6.2 Actualizar vehículo Motocicleta ok -> 200', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingMoto = {
-        id,
-        obtenerTipo: () => 'Motocicleta',
+      const dto = {
+        tipo: 'Motocicleta',
+        datos: {
+          placa: 'ABC-123D',
+          marca: 'Honda',
+          modelo: 'CBR',
+          color: 'Negro',
+          anio: 2023,
+          clasificacion: 'Gasolina',
+          tipoMoto: 'Deportiva',
+        },
       };
-      vehiculosService.findOne.mockResolvedValue(existingMoto as any);
-      const updateDto = { tipoMoto: 'Scooter' };
-      const updatedResult = { id, ...updateDto };
-      vehiculosService.update.mockResolvedValue(updatedResult as any);
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
+      const updateDto = { tipoMoto: 'Scooter' };
       const res = await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
         .send(updateDto)
         .expect(200);
 
-      expect(res.body).toEqual(updatedResult);
+      expect(res.body.tipoMoto).toEqual('Scooter');
     });
 
     it('CP6.3 Actualizar vehículo Camioneta ok -> 200', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingCamioneta = {
-        id,
-        obtenerTipo: () => 'Camioneta',
+      const dto = {
+        tipo: 'Camioneta',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Ford',
+          modelo: 'Ranger',
+          color: 'Blanco',
+          anio: 2021,
+          clasificacion: 'Diesel',
+          cabina: 'doble',
+          capacidadCarga: 800,
+        },
       };
-      vehiculosService.findOne.mockResolvedValue(existingCamioneta as any);
-      const updateDto = { cabina: 'simple', capacidadCarga: 900 };
-      const updatedResult = { id, ...updateDto };
-      vehiculosService.update.mockResolvedValue(updatedResult as any);
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
+      const updateDto = { cabina: 'simple', capacidadCarga: 900 };
       const res = await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
         .send(updateDto)
         .expect(200);
 
-      expect(res.body).toEqual(updatedResult);
+      expect(res.body.cabina).toEqual('simple');
+      expect(res.body.capacidadCarga).toEqual(900);
     });
 
     it('CP6.4 Actualizar vehículo - Not Found -> 404', async () => {
       const id = '123e4567-e89b-12d3-a456-426614174000';
-      vehiculosService.findOne.mockRejectedValue(new NotFoundException('Vehiculo no encontrado'));
-
       await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
         .send({ numeroPuertas: 4 })
@@ -687,9 +752,21 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
     });
 
     it('CP6.5 Actualizar vehículo - Intento de modificar placa -> 400', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingAuto = { id, obtenerTipo: () => 'Auto' };
-      vehiculosService.findOne.mockResolvedValue(existingAuto as any);
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
       await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
@@ -698,9 +775,21 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
     });
 
     it('CP6.6 Actualizar vehículo - Intento de modificar marca, modelo o año -> 400', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingAuto = { id, obtenerTipo: () => 'Auto' };
-      vehiculosService.findOne.mockResolvedValue(existingAuto as any);
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
       await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
@@ -709,9 +798,21 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
     });
 
     it('CP6.7 Actualizar Auto - número de puertas inválido -> 400', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingAuto = { id, obtenerTipo: () => 'Auto' };
-      vehiculosService.findOne.mockResolvedValue(existingAuto as any);
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
       await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
@@ -720,9 +821,21 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
     });
 
     it('CP6.8 Actualizar Auto - capacidad de maletero inválida -> 400', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingAuto = { id, obtenerTipo: () => 'Auto' };
-      vehiculosService.findOne.mockResolvedValue(existingAuto as any);
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
       await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
@@ -731,9 +844,20 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
     });
 
     it('CP6.9 Actualizar Motocicleta - tipo de moto inválido -> 400', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingMoto = { id, obtenerTipo: () => 'Motocicleta' };
-      vehiculosService.findOne.mockResolvedValue(existingMoto as any);
+      const dto = {
+        tipo: 'Motocicleta',
+        datos: {
+          placa: 'ABC-123D',
+          marca: 'Honda',
+          modelo: 'CBR',
+          color: 'Negro',
+          anio: 2023,
+          clasificacion: 'Gasolina',
+          tipoMoto: 'Deportiva',
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
       await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
@@ -742,9 +866,21 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
     });
 
     it('CP6.10 Actualizar Camioneta - cabina inválida -> 400', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingCamioneta = { id, obtenerTipo: () => 'Camioneta' };
-      vehiculosService.findOne.mockResolvedValue(existingCamioneta as any);
+      const dto = {
+        tipo: 'Camioneta',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Ford',
+          modelo: 'Ranger',
+          color: 'Blanco',
+          anio: 2021,
+          clasificacion: 'Diesel',
+          cabina: 'doble',
+          capacidadCarga: 800,
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
       await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
@@ -753,9 +889,21 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
     });
 
     it('CP6.11 Actualizar Camioneta - capacidad de carga inválida -> 400', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const existingCamioneta = { id, obtenerTipo: () => 'Camioneta' };
-      vehiculosService.findOne.mockResolvedValue(existingCamioneta as any);
+      const dto = {
+        tipo: 'Camioneta',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Ford',
+          modelo: 'Ranger',
+          color: 'Blanco',
+          anio: 2021,
+          clasificacion: 'Diesel',
+          cabina: 'doble',
+          capacidadCarga: 800,
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
       await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}`)
@@ -766,43 +914,65 @@ describe('VehiculosController (REST - CP Vehiculos)', () => {
 
   describe('Eliminar y Reactivar Vehículo (DELETE /api/vehiculos/:id, PATCH /api/vehiculos/:id/reactivar)', () => {
     it('CP7.1 Eliminar vehículo ok (Baja lógica) -> 200', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const deletedResult = { id, activo: false };
-      vehiculosService.remove.mockResolvedValue(deletedResult as any);
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
 
       const res = await request(app.getHttpServer())
         .delete(`/api/vehiculos/${id}`)
         .expect(200);
 
-      expect(res.body).toEqual(deletedResult);
+      expect(res.body.activo).toEqual(false);
     });
 
     it('CP7.2 Eliminar vehículo - Not Found -> 404', async () => {
       const id = '123e4567-e89b-12d3-a456-426614174000';
-      vehiculosService.remove.mockRejectedValue(new NotFoundException('Vehiculo no encontrado'));
-
       await request(app.getHttpServer())
         .delete(`/api/vehiculos/${id}`)
         .expect(404);
     });
 
     it('CP8.1 Reactivar vehículo ok -> 200', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      const reactivatedResult = { id, activo: true };
-      vehiculosService.reactivar.mockResolvedValue(reactivatedResult as any);
+      const dto = {
+        tipo: 'Auto',
+        datos: {
+          placa: 'ABC-1234',
+          marca: 'Toyota',
+          modelo: 'Corolla',
+          color: 'Rojo',
+          anio: 2022,
+          clasificacion: 'Gasolina',
+          numeroPuertas: 4,
+          capacidadMaletero: 400,
+        },
+      };
+      const createRes = await request(app.getHttpServer()).post('/api/vehiculos').send(dto).expect(201);
+      const id = createRes.body.id;
+
+      await request(app.getHttpServer()).delete(`/api/vehiculos/${id}`).expect(200);
 
       const res = await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}/reactivar`)
         .send({})
         .expect(200);
 
-      expect(res.body).toEqual(reactivatedResult);
+      expect(res.body.activo).toEqual(true);
     });
 
     it('CP8.2 Reactivar vehículo - Not Found -> 404', async () => {
       const id = '123e4567-e89b-12d3-a456-426614174000';
-      vehiculosService.reactivar.mockRejectedValue(new NotFoundException('Vehiculo no encontrado'));
-
       await request(app.getHttpServer())
         .patch(`/api/vehiculos/${id}/reactivar`)
         .send({})

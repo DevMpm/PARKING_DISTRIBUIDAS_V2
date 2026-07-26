@@ -81,3 +81,123 @@ Considera los siguientes aspectos:
 Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes forzar a que pasen, solo comunícamelas. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
 
 Como solo estoy manejando pruebas unitarias no intentes tocar las pruebas end-to-end del módulo, y de preferencia trabaja modificando los archivos de test ya existentes.
+-------- Personas  Plan ---------------
+Con base en la siguiente estructura y guía, crea una lista de casos de prueba "CP" para el módulo de personas y usuarios en la carpeta @gestion-usuarios/src/personas, y @gestion-usuarios/src/users
+
+- Los casos de prueba corresponderán a pruebas de estilo REST sobre los diferentes endpoints en el archivo @gestion-usuarios/src/personas/personas.controller.ts y @gestion-usuarios/src/users/users.controller.ts
+
+- Puedes revisar la lógica de todo el módulo de gestion de usuarios, @gestion-usuarios/src. Sin embargo, te recomiendo seguir esta estructura para definir los casos:
+
+Endpoints/Operaciones Create
+
+- CP Crear ok → Verificar 200, Respuesta con datos correctos, Buscar por Id para confirmar creación.
+- CP Crear duplicado - Verificar 409 y mensaje de error.
+- CP datos inválidos, Maneja al menos un caso por campo y constraint del DTO. → Verificar 400 y mensaje de error.
+
+Endpoints/Operaciones Get que devuelven varios resultados.
+
+- CP Buscar ok → Verificar 200 y cantidad de registros obtenidos en la consulta.
+(Si buscan por un parámetro también va este caso:)
+- CP Buscar sin resultados → Verificar 200 y cantidad de registros obtenidos (0).
+
+Endpoints/Operaciones Get que devuelven un único resultado.
+
+- CP Buscar ok → Verificar 200, Datos de la respuesta coinciden con parámetro de búsqueda.
+- CP Buscar sin resultado → Verificar 404 y mensaje de error.
+
+Endpoints/Operaciones de actualizar (UPDATE, PATCH)
+
+- CP actualizar ok → Verificar 200, Datos de respuesta coinciden, Buscar por Id para confirmar el cambio.
+- CP not found → Verificar 404 y mensaje de error.
+- CP datos inválidos, al menos un caso por constraint del dto. → Verificar 400 y mensaje de error.
+
+Endpoints/Operaciones de eliminar
+
+- CP eliminar ok → Verificar 200, Buscar por Id para confirmar not found o cambio de estado si es eliminación lógica.
+- CP eliminar not found → Verificar 404 y mensaje de error.  
+
+Toma como referencia los archivos @cp_espacios, @cp_vehículos y @cp_zonas para la elaboración de los casos y sigue su nomenclatura y estructura: Precondiciones, Entrada y Verificar. 
+
+Genera únicamente la lista de casos en un archivo "cp_usuarios.txt" en la carpeta @pruebas_unitarias/, aún no escribas código de pruebas.
+------------- Personas exec ------------------
+Con base en los archivos @/puebas_unitarias/cp_personas.txt y @/puebas_unitarias/cp_usuarios.txt, crea implementa las pruebas unitarias en NestJS que permitan probar desde un punto de vista REST, no desde servicios. 
+Considera los siguientes aspectos:
+- Como los endpoints están protegidos por JWT, puedes trabajar con un mock que cuente con los permisos necesarios, para que el control pase. Revisa los archivos de controlador en @gestion-usuarios/src/personas y @gestion-usuarios/src/users, y la configuración de seguridad en @gestion-usuarios/src/auth para tener un panorama completo de como funcionan los flujos de autorización.
+- Puedes guiarte por los archivos de dto en las carpetas @, los archivos de entidad en @gestion-usuarios/src/personas/entities y @gestion-usuarios/src/users/entities, y por los servicios en los archivos @gestion-usuarios/src/users/users.service.ts y @gestion-usuarios/src/personas/personas.service.ts para entender las validaciones, mensajes de error y lógica que manejan, pero no puedes modificarlos. 
+- Puedes usar funciones que llamen a los servicios para acciones que formen parte de las verificaciones o Precondiciones, como crear zonas, espacios o hacer una búsqueda.
+- Si es necesario agregar dependencias al módulo @gestion-usuarios/ puedes hacerlo, pero no puedes manipular dependencias ya existentes. Tampoco puedes modificar otros archivos que no sean los spec.ts sin permiso. Si lo consideras necesario, indícame la razón y yo revisaré antes de autorizarlo. Si detectas un cambio que no hayas realizado, es un cambio hecho por mí, entonces no debes quitarlo.
+- Para las pruebas, si lo necesitas, usa una base de datos mock de postgresql, toma como base la estrcutura de db-usuarios en @docker-compose.yaml. Puedes levantarla, pero no modifiques este archivo. 
+- No olvides incluir los casos adicionales o sub-casos de prueba, se escriben con la palabra clave "CP". 
+
+Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes forzar a que pasen, solo comunícamelas. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
+
+Como solo estoy manejando pruebas unitarias no intentes tocar las pruebas end-to-end del módulo, y de preferencia trabaja modificando los archivos de test ya existentes.
+--------- Rediseño vehiculos ------
+Toma todas los casos de prueba de @VehiclesNPM/vehiculos/src/vehiculos/vehiculos.controller.spec.ts y transformalos de casos de prueba unitarios aislados a casos de prueba sociables, es decir, que no se use el servicio como mock, si no que se llame en flujo (controlador real → service real → datasource mock testcontainer).
+- La información del testcontainer a utilizar está en los archivos de @VehiclesNPM/vehiculos/test, puedes modificar los archivos dentro de esa carpeta libremente. 
+- Puedes tener acceso a todo el contexto de @VehiclesNPM/vehiculos/src, para realizar los mocks de los guards auth en @VehiclesNPM/vehiculos/src/auth y la importación de los demás servicios necesarios, pero no puedes maniplar ninguno de estos archivos.
+- Recuerda mantener el enfoque TDD (Si detectas errores por compilación, dependencias u otras fallas técnicas puedes modificar el código, si solo son bugs o errores de lógica, reporta la causa del fallo en test_logs.txt, y no intentes forzar a que la prueba pase.) 
+- Cuando las pruebas estén listas, realiza un análisis de cobertura y enfócate en los archivos @VehiclesNPM/vehiculos/src/vehiculos/vehiculos.controller.ts y @VehiclesNPM/vehiculos/src/vehiculos/vehiculos.service.ts.
+--------- Rediseño personas y usuarios ------
+Toma todas los casos de prueba de @gestion-usuarios/src/users/users.controller.spec.ts y gestion-usuarios/src/personas/personas.controller.spec.ts, y transformalos de casos de prueba unitarios aislados a casos de prueba sociables, es decir, que no se use el servicio como mock, si no que se llame en flujo (controlador real → service real → datasource mock testcontainer).
+- La información del testcontainer a utilizar debes colocarla en @gestion-usuarios/test, puedes modificar los archivos dentro de esa carpeta libremente. De hecho, pasa todo el contenido de los archivos .spec.ts a archivos .e2e-spect.ts. Si es necesario instala la dependencia de testcontainers "npm install --save-dev testcontainers @testcontainers/postgresql". Toma como referencia los archivos ya existentes de @VehiclesNPM/vehiculos/test y VehiclesNPM/vehiculos/src/vehiculos/vehiculos.controller.spec.ts.
+- Puedes tener acceso a todo el contexto de @gestion-usuarios/src, para realizar los mocks de los guards auth en @gestion-usuarios/src/auth, la importación de los demás servicios necesarios, y la estuctura de la base de datos para el testcontainer pero no puedes maniplar ninguno de estos archivos.
+- Recuerda mantener el enfoque TDD (Si detectas errores por compilación, dependencias u otras fallas técnicas puedes modificar el código, si solo son bugs o errores de lógica, reporta la causa del fallo en test_log.txt, y no intentes forzar a que la prueba pase.) 
+- Cuando las pruebas estén listas, realiza un análisis de cobertura.
+--------- Roles, Roleusers, Permisos, Rolepermisos Plan-----
+Con base en la siguiente estructura y guía, crea una lista de casos de prueba "CP" para el módulo de roles, roleusers, permissions y rolepermissions en la carpeta @gestion-usuarios/src/roles, y @gestion-usuarios/src/roleusers
+
+- Los casos de prueba corresponderán a pruebas de estilo REST sobre los diferentes endpoints en los archivos @gestion-usuarios/src/roleusers/roleusers.controller.ts, @gestion-usuarios/src/roles/permissions.controller.ts, @gestion-usuarios/src/roles/role-permissions.controller.ts y gestion-usuarios/src/roles/role-permissions.controller.ts.
+
+- Puedes revisar la lógica de todo el módulo de gestion de usuarios, @gestion-usuarios/src. Sin embargo, te recomiendo seguir esta estructura para definir los casos:
+
+Endpoints/Operaciones Create
+
+- CP Crear ok → Verificar 200, Respuesta con datos correctos, Buscar por Id para confirmar creación.
+- CP Crear duplicado - Verificar 409 y mensaje de error.
+- CP datos inválidos, Maneja al menos un caso por campo y constraint del DTO. → Verificar 400 y mensaje de error.
+
+Endpoints/Operaciones Get que devuelven varios resultados.
+
+- CP Buscar ok → Verificar 200 y cantidad de registros obtenidos en la consulta.
+(Si buscan por un parámetro también va este caso:)
+- CP Buscar sin resultados → Verificar 200 y cantidad de registros obtenidos (0).
+
+Endpoints/Operaciones Get que devuelven un único resultado.
+
+- CP Buscar ok → Verificar 200, Datos de la respuesta coinciden con parámetro de búsqueda.
+- CP Buscar sin resultado → Verificar 404 y mensaje de error.
+
+Endpoints/Operaciones de actualizar (UPDATE, PATCH)
+
+- CP actualizar ok → Verificar 200, Datos de respuesta coinciden, Buscar por Id para confirmar el cambio.
+- CP not found → Verificar 404 y mensaje de error.
+- CP datos inválidos, al menos un caso por constraint del dto. → Verificar 400 y mensaje de error.
+
+Endpoints/Operaciones de eliminar
+
+- CP eliminar ok → Verificar 200, Buscar por Id para confirmar not found o cambio de estado si es eliminación lógica.
+- CP eliminar not found → Verificar 404 y mensaje de error.  
+
+Toma como referencia los archivos ya existentes en @/pruebas_unitarias con los nombres que comienzan en "cp_" para la elaboración de los casos y sigue su nomenclatura y estructura: Precondiciones, Entrada y Verificar. 
+
+Genera únicamente la lista de casos los respectivos archivos "cp_roles", "cp_roleusers", "cp_permissions" y "cp_rolepermissions" en la carpeta @pruebas_unitarias/, aún no escribas código de pruebas.
+
+-------- Roles, permisos, y combinaciones exec ---------
+Con base en los archivos @/puebas_unitarias/cp_permissions.txt, @/puebas_unitarias/cp_rolepermissions.txt, @/puebas_unitarias/cp_roleusers.txt y @/puebas_unitarias/cp_roles.txt, crea implementa las pruebas unitarias sociables en NestJS que permitan probar desde un punto de vista REST en modo (controlador real → servicio real → mock datasource).
+Considera los siguientes aspectos:
+- Como los endpoints están protegidos por JWT, puedes trabajar con un mock que cuente con los permisos necesarios, para que el control pase. Revisa los archivos de controlador en las carpetas @gestion-usuarios/src/roleusers y @gestion-usuarios/src/roles, y la configuración de seguridad en @gestion-usuarios/src/auth para tener un panorama completo de como funcionan los flujos de autorización.
+- Puedes guiarte por los archivos de dto en las carpetas @gestion-usuarios/src/roles/dto y @gestion-usuarios/src/roleusers/dto, los archivos de entidad en @gestion-usuarios/src/roles/entities y @gestion-usuarios/src/roleusers/entities, y por los servicios en los archivos:
+* gestion-usuarios/src/roles/permissions.service.ts
+* gestion-usuarios/src/roles/role-permissions.service.ts
+* gestion-usuarios/src/roles/roles.service.ts
+* gestion-usuarios/src/roleusers/roleusers.service.ts
+ para entender las validaciones, mensajes de error y lógica que manejan, pero no puedes modificarlos. 
+- Puedes usar los servicios para acciones que formen parte de las verificaciones o Precondiciones, como crear zonas, espacios o hacer una búsqueda.
+- Si es necesario agregar dependencias al módulo @gestion-usuarios/ puedes hacerlo, pero no puedes manipular dependencias ya existentes. Tampoco puedes modificar otros archivos que no sean los e2e-spec.ts sin permiso. Si lo consideras necesario, indícame la razón y yo revisaré antes de autorizarlo. Si detectas un cambio que no hayas realizado, es un cambio hecho por mí, entonces no debes quitarlo.
+- Para las pruebas, si lo necesitas, usa el testcontainer ya configurado, revisa la configuración de pruebas en @gestion-usuarios/test y usa los archivos e2e-spec.ts ya existentes como referencia.
+- No olvides incluir los casos adicionales o sub-casos de prueba, se escriben con la palabra clave "CP". 
+
+Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes forzar a que pasen, solo comunícamelas. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
+
+Como estoy manejando pruebas unitarias "sociales", trabaja sobre los archivos ".e2e-spec.ts" en la carpeta test. 

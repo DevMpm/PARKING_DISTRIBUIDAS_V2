@@ -27,6 +27,16 @@ jobs:
         working-directory: ./ModuloZonas
         run: ./mvnw test
 
+      - name: Run Tests & JaCoCo Report
+        run: mvn clean test jacoco:report # Ajusta si usas Gradle: ./gradlew test jacocoTestReport
+
+      - name: Upload JaCoCo Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-jacoco
+          path: target/site/jacoco/ # Ajusta si usas Gradle: build/reports/jacoco/test/html/
+          retention-days: 1
+
   test-node:
     name: Test NestJS Microservices
     runs-on: ubuntu-latest
@@ -51,6 +61,29 @@ jobs:
       - name: Run Unit Tests
         working-directory: ./${{ matrix.service }}
         run: npm run test
+
+      - name: Run Coverage Report
+        working-directory: ./${{ matrix.service }}
+        run: npm run test:cov
+
+      # Normalizar el nombre del servicio para usarlo como nombre de artefacto/carpeta
+      # Remplaza '/' por '-' (ej: VehiclesNPM/vehiculos -> VehiclesNPM-vehiculos)
+      - name: Sanitize service name
+        id: sanitize
+        run: |
+          SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '/' '-')
+          echo "clean_name=$SERVICE_NAME" >> $GITHUB_OUTPUT
+
+      # Subir el reporte de cobertura HTML de este microservicio
+      # NestJS por defecto genera la cobertura en ./coverage/lcov-report
+      - name: Upload Jest Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-jest-${{ steps.sanitize.outputs.clean_name }}
+          path: ./${{ matrix.service }}/coverage/lcov-report/
+          retention-days: 1
+
+
 
   test-python:
     name: Test ticket-service (Python)
@@ -107,3 +140,104 @@ jobs:
       - name: View Logs on Failure
         if: failure()
         run: docker compose logs
+
+
+deploy-coverage:
+    name: Consolidate & Deploy Coverage Reports
+    needs: [test-node, test-java] # Espera a que ambos jobs terminen
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code (Opcional, para scripts)
+        uses: actions/checkout@v4
+
+      # Descargar TODOS los artefactos generados en los jobs anteriores
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      # Organizar los reportes en la carpeta 'public' y crear el Index principal
+      - name: Organize Reports and Generate Index
+        run: |
+          mkdir -p public/jest
+          mkdir -p public/jacoco
+
+          # Copiar reporte de JaCoCo
+          if [ -d "artifacts/coverage-jacoco" ]; then
+            cp -r artifacts/coverage-jacoco/* public/jacoco/
+          fi
+
+          # Copiar reportes de NestJS (iterar sobre los artefactos descargados)
+          for dir in artifacts/coverage-jest-*; do
+            if [ -d "$dir" ]; then
+              # Extraer el nombre limpio del servicio cortando el prefijo
+              SERVICE_NAME=$(basename "$dir" | sed 's/coverage-jest-//')
+              mkdir -p "public/jest/$SERVICE_NAME"
+              cp -r "$dir"/* "public/jest/$SERVICE_NAME/"
+            fi
+          done
+
+          # Crear un index.html dinámico
+          cat << 'EOF' > public/index.html
+          <!DOCTYPE html>
+          <html lang="es">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Dashboard de Cobertura</title>
+            <style>
+              body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #24292f; }
+              h1 { border-bottom: 1px solid #hsla(210,18%,87%,1); padding-bottom: 10px; }
+              .section { margin-bottom: 30px; }
+              .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 15px; }
+              .card { border: 1px solid #d0d7de; border-radius: 6px; padding: 16px; background: #f6f8fa; }
+              .card h3 { margin-top: 0; margin-bottom: 8px; font-size: 16px; }
+              a { color: #0969da; text-decoration: none; font-weight: 600; }
+              a:hover { text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            <h1>📊 Cobertura de Código</h1>
+
+            <div class="section">
+              <h2>Java Backend (JaCoCo)</h2>
+              <div class="card">
+                <h3>Servicio Java</h3>
+                <a href="./jacoco/index.html">Ver reporte de cobertura &rarr;</a>
+              </div>
+            </div>
+
+            <div class="section">
+              <h2>Microservicios NestJS (Jest)</h2>
+              <div class="grid">
+                <div class="card">
+                  <h3>Gestión Usuarios</h3>
+                  <a href="./jest/gestion-usuarios/index.html">Ver cobertura &rarr;</a>
+                </div>
+                <div class="card">
+                  <h3>Assignment Service</h3>
+                  <a href="./jest/assignment-service/index.html">Ver cobertura &rarr;</a>
+                </div>
+                <div class="card">
+                  <h3>Vehículos NPM</h3>
+                  <a href="./jest/VehiclesNPM-vehiculos/index.html">Ver cobertura &rarr;</a>
+                </div>
+              </div>
+            </div>
+          </body>
+          </html>
+          EOF
+
+      # Subir y desplegar la carpeta public unificada a GitHub Pages
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'public'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
