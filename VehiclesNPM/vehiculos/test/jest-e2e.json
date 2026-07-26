@@ -2,7 +2,7 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "..",
   "testEnvironment": "node",
-  "testRegex": "src/vehiculos/vehiculos\\.controller\\.spec\\.ts$",
+  "testRegex": ["src/vehiculos/vehiculos\\.controller\\.spec\\.ts$", "\\.e2e-spec\\.ts$"],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },

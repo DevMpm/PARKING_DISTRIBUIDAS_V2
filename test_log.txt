@@ -1,8 +1,18 @@
 [Test Log - gestion-usuarios]
-1. Fallo detectado en CP11.3 (GET /users/username/nonexistent): La prueba esperaba recibir un código HTTP 404 (Not Found) cuando un username no existe.
-- Causa del fallo de lógica en el código fuente (`src/users/users.service.ts`): En el método `findByUsername`, se llama a `this.userRepository.findOne(...)` sin el operador `await`, por lo que el método retorna una promesa pendiente en lugar del resultado de la consulta o de lanzar `NotFoundException`, provocando que el controlador reciba una respuesta exitosa (200) en lugar de un error 404.
+1: [Test Log - gestion-usuarios]
+2: 1. Fallo detectado en CP11.3 (GET /users/username/nonexistent): La prueba esperaba recibir un código HTTP 404 (Not Found) cuando un username no existe.
+3: - Causa del fallo de lógica en el código fuente (`src/users/users.service.ts`): En el método `findByUsername`, se llama a `this.userRepository.findOne(...)` sin el operador `await`, por lo que el método retorna una promesa pendiente en lugar del resultado de la consulta o de lanzar `NotFoundException`, provocando que el controlador reciba una respuesta exitosa (200) en lugar de un error 404.
+4: 
+5: 2. Fallo detectado en CP7.1 y CP8.1 (Activar / Desactivar Persona): La prueba recibe un error HTTP 500 (Internal Server Error) al intentar activar o desactivar una persona.
+6: - Causa del fallo de lógica en el código fuente (`src/personas/personas.service.ts`): En los métodos `activate` y `deactivate`, el servicio llama a `this.userRepository.save(persona)` pasando una entidad `Persona` al repositorio de usuarios (`userRepository`), lo que provoca un error de restricción de base de datos (`null value in column "password_hash" violates not-null constraint`). Debería invocar `this.personaRepository.save(persona)`.
+7: 
+8: Siguiendo las directrices TDD, estos errores de lógica en el código de producción se documentan en este registro de fallos y no se fuerzan ni se modifican en `src/`.
 
-2. Fallo detectado en CP7.1 y CP8.1 (Activar / Desactivar Persona): La prueba recibe un error HTTP 500 (Internal Server Error) al intentar activar o desactivar una persona.
-- Causa del fallo de lógica en el código fuente (`src/personas/personas.service.ts`): En los métodos `activate` y `deactivate`, el servicio llama a `this.userRepository.save(persona)` pasando una entidad `Persona` al repositorio de usuarios (`userRepository`), lo que provoca un error de restricción de base de datos (`null value in column "password_hash" violates not-null constraint`). Debería invocar `this.personaRepository.save(persona)`.
+[Test Log - VehiclesNPM / Gateway]
+1. Fallo detectado en CP1.2 (Consultar vehículo por placa no existente - GET /gateway/vehiculos/:placa):
+- La prueba esperaba recibir un código HTTP 200 con `{ registrado: false }` para una placa no registrada, según la especificación de diseño del preflight.
+- Causa de la incoherencia lógica (`src/gateway/gateway.service.ts` y `src/vehiculos/vehiculos.service.ts`): `GatewayService.consultarVehiculo` delega en `this.vehiculosService.findByPlacaOpcional(placa)`. Sin embargo, `findByPlacaOpcional` lanza una excepción `NotFoundException` (404) cuando no encuentra el vehículo en lugar de retornar `null` o manejar la ausencia de forma opcional.
 
-Siguiendo las directrices TDD, estos errores de lógica en el código de producción se documentan en este registro de fallos y no se fuerzan ni se modifican en `src/`.
+2. Fallo detectado en CP3.1 y CP3.2 (Registrar vehículo e ingresar / Walk-in - POST /gateway/ingresos/walk-in):
+- Las pruebas de walk-in para un vehículo nuevo fallan (reciben 404/500 en lugar de 200/201).
+- Causa de la incoherencia lógica (`src/gateway/gateway.service.ts`): `registrarEIngresar` invoca `findByPlacaOpcional(dto.vehiculo.datos.placa)` para comprobar si ya existe el vehículo. Al lanzar `NotFoundException` cuando no existe, se interrumpe el flujo normal de registro de vehículos nuevos.

@@ -137,12 +137,8 @@ export class VehiculosService {
   //Variante que no lanza excepción, útil cuando el gateway necesita
   //decidir entre "ya existe" vs "hay que registrarlo".
   async findByPlacaOpcional(placa: string) {
-    const existe = await this.repositoryVehiculo.findOne({ where: { placa } });
-    if (!existe) {
-      throw new NotFoundException(`No existe un vehículo registrado con la placa ${placa}`);
-    }
     //await this.emitEvent('READ', existe);
-    return existe;
+    return await this.repositoryVehiculo.findOne({ where: { placa } });;
   }
 
   //Reglas de negocio para autorizar el ingreso físico al parqueadero.

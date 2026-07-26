@@ -60,7 +60,7 @@ jobs:
         
       - name: Run Unit Tests
         working-directory: ./${{ matrix.service }}
-        timeout-minutes: 5 
+        timeout-minutes: 10 
         env:
           TESTCONTAINERS_RYUK_DISABLED: 'false'
         run: npm run test:e2e
