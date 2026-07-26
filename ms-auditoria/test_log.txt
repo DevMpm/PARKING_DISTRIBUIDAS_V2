@@ -1,0 +1,15 @@
+# Test Log - Módulo de Auditoría (ms-auditoria)
+
+Fecha: 2026-07-26
+Entorno: Pruebas E2E / Sociables (NestJS + Testcontainers PostgreSQL + Supertest + Mock Amqplib)
+
+## Resumen de Ejecución
+- **Test Suites:** 1 passed, 1 total
+- **Casos de Prueba (CP):** 27 passed, 27 total
+- **Cobertura:** Generada correctamente mediante `npm run test:cov` apuntando a `./test/jest-e2e.json`.
+
+## Observaciones y Hallazgos (Enfoque TDD)
+1. **Validación DTO (entidadId):** Se verificó que el decorador `@IsUUID('4')` en `CreateAuditEventDto` requiere estrictamente un UUID versión 4 (por ejemplo, con '4' en la posición de versión, ej: `123e4567-e89b-42d3-a456-426614174000`), lo cual validó correctamente las restricciones de negocio.
+2. **Consumidor RabbitMQ (AuditConsumer):** Se implementó un mock avanzado de `amqplib` para capturar la función de callback de consumo, permitiendo probar el flujo real de `AuditConsumer` (procesamiento DTO, validación, almacenamiento en base de datos y acuse/rechazo con `ack` / `nack`) sin requerir un broker RabbitMQ externo.
+3. **Seguridad y Autorización:** Los guards JWT y Permissions fueron sobreescritos adecuadamente en las pruebas e2e permitiendo simular tokens con los permisos requeridos (`AUDITORIA_CREATE`, `AUDITORIA_READ`).
+4. **Bugs de Lógica:** No se detectaron fallos ni incoherencias lógicas en el código fuente de producción; todos los endpoints REST y consumidores respondieron según los requerimientos especificados en `pruebas_unitarias/cp_auditoria`.
