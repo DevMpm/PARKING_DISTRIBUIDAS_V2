@@ -166,13 +166,13 @@ export class PersonasService {
   async activate(id : string){
     const persona = await this.findOne(id);
     persona.activo = true;
-    return this.userRepository.save(persona);
+    return this.personaRepository.save(persona);
   }
 
   async deactivate(id : string){
     const persona = await this.findOne(id);
     persona.activo = false;
-    return this.userRepository.save(persona);
+    return this.personaRepository.save(persona);
   }
 
   

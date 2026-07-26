@@ -1,0 +1,16 @@
+Lista de entidades, controllers y dtos para mocks
+Zonas y Espacios:
+ Entidades: ModuloZonas/src/main/java/ec/edu/espe/zonas/dominio/entidades
+ DTOs: ModuloZonas/src/main/java/ec/edu/espe/zonas/datos/dtos
+ Controllers: ModuloZonas/src/main/java/ec/edu/espe/zonas/controladores
+ Servicios: ModuloZonas/src/main/java/ec/edu/espe/zonas/servicios
+Usuarios:
+ Entidades: gestion-usuarios/src/users/entities
+ DTOs: gestion-usuarios/src/users/dto
+ Controllers: gestion-usuarios/src/users/users.controller.ts
+ Servicios: gestion-usuarios/src/users/users.service.ts
+Vehiculos:
+ Entidades: VehiclesNPM/vehiculos/src/vehiculos/entities
+ DTOs: VehiclesNPM/vehiculos/src/vehiculos/dto
+ Controllers: VehiclesNPM/vehiculos/src/vehiculos/vehiculos.controller.ts
+ Servicios: VehiclesNPM/vehiculos/src/vehiculos/vehiculos.service.ts

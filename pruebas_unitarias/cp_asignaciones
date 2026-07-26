@@ -1,0 +1,203 @@
+Crear Asignación
+
+CP1.1 Crear asignación ok
+Precondiciones: Token JWT con roles suficientes (ASIGNACIONES_CREATE), usuario existente en gestion-usuarios y vehículo existente en vehiculos-service sin asignación activa.
+Entrada: JSON con userId válido (UUID v4), vehicleId válido (UUID v4) y notas opcionales válidas (POST /asignaciones).
+Verificar:
+1. Código de respuesta 201
+2. Respuesta DTO con datos correctos de la asignación creada.
+3. Buscar por ID compuesto (userId y vehicleId) para confirmar su existencia.
+
+CP1.2 Crear asignación - Ya existe una asignación activa del vehículo con el mismo usuario
+Precondiciones: Token JWT con roles suficientes y una asignación activa ya creada entre el usuario y el vehículo.
+Entrada: JSON con el mismo userId y vehicleId de la asignación activa existente.
+Verificar:
+1. Código de respuesta 409
+2. Mensaje de error indicando conflicto o que ya existe una asignación activa para el usuario y el vehículo.
+
+CP1.3 Crear asignación - Ya existe asignación activa con otro usuario
+Precondiciones: Token JWT con roles suficientes y el vehículo ya tiene una asignación activa con otro usuario diferente.
+Entrada: JSON con un nuevo userId y el vehicleId que ya está asignado activamente a otro propietario.
+Verificar:
+1. Código de respuesta 409
+2. Mensaje de error indicando que el vehículo ya está asignado activamente a otro usuario.
+
+CP1.4 Crear asignación - Ya existe una asignación inactiva con el mismo usuario
+Precondiciones: Token JWT con roles suficientes y una asignación inactiva (activa = false) previa entre el usuario y el vehículo.
+Entrada: JSON con el mismo userId y vehicleId que poseen un registro inactivo.
+Verificar:
+1. Código de respuesta 409
+2. Mensaje de error indicando que existe una asignación inactiva y sugiriendo usar PATCH para reactivarla.
+
+CP1.5 Crear asignación - Usuario o vehículo no existe
+Precondiciones: Token JWT con roles suficientes.
+Entrada: JSON con userId o vehicleId que no existen en sus respectivos microservicios.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error indicando que el usuario o el vehículo no existe.
+
+CP1.6 Crear asignación - userId inválido (No UUID v4)
+Precondiciones: Token JWT con roles suficientes.
+Entrada: JSON con userId inválido (ej: "12345", "no-uuid").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para userId.
+
+CP1.7 Crear asignación - vehicleId inválido (No UUID v4)
+Precondiciones: Token JWT con roles suficientes.
+Entrada: JSON con vehicleId inválido (ej: "12345", "no-uuid").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para vehicleId.
+
+CP1.8 Crear asignación - Notas muy largas (> 500 caracteres)
+Precondiciones: Token JWT con roles suficientes.
+Entrada: JSON con notas de más de 500 caracteres.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para notas.
+
+
+Obtener Asignaciones (Múltiples resultados)
+
+CP2.1 Obtener todas las asignaciones ok
+Precondiciones: Token JWT con roles suficientes (ASIGNACIONES_READ) y asignaciones creadas en el sistema.
+Entrada: Ninguna (GET /asignaciones)
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros obtenidos en el array acorde al total existente.
+
+CP2.2 Obtener flota de vehículos por propietario ok
+Precondiciones: Token JWT con roles suficientes (ASIGNACIONES_READ) y vehículos asignados a un propietario específico.
+Entrada: UUID de propietario como parámetro (GET /asignaciones/propietario/:userId)
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros obtenidos coincidente con la flota del propietario.
+
+CP2.3 Obtener flota de vehículos por propietario sin resultados
+Precondiciones: Token JWT con roles suficientes.
+Entrada: UUID de propietario sin vehículos asignados.
+Verificar:
+1. Código de respuesta 200 y cantidad de registros 0 (array vacío).
+
+CP2.4 Obtener flota de vehículos por propietario - userId inválido
+Precondiciones: Token JWT con roles suficientes.
+Entrada: UUID de propietario con formato inválido (GET /asignaciones/propietario/abc).
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación (ParseUUIDPipe).
+
+
+Obtener Asignación (Único resultado)
+
+CP3.1 Buscar asignación activa por vehículo ok
+Precondiciones: Token JWT con roles suficientes (ASIGNACIONES_READ) y una asignación activa asociada a un vehículo.
+Entrada: UUID del vehículo como parámetro (GET /asignaciones/vehiculo/:vehicleId/activo)
+Verificar:
+1. Código de respuesta 200
+2. Datos de la respuesta coinciden con la asignación activa del vehículo.
+
+CP3.2 Buscar asignación activa por vehículo - No encontrada
+Precondiciones: Token JWT con roles suficientes.
+Entrada: UUID de vehículo sin asignación activa.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error indicando que no existe asignación activa para el vehículo.
+
+CP3.3 Buscar asignación activa por vehículo - vehicleId inválido
+Precondiciones: Token JWT con roles suficientes.
+Entrada: UUID de vehículo con formato inválido (GET /asignaciones/vehiculo/abc/activo).
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación (ParseUUIDPipe).
+
+CP3.4 Buscar asignación específica por clave compuesta (userId y vehicleId) ok
+Precondiciones: Token JWT con roles suficientes (ASIGNACIONES_READ) y una asignación creada con un userId y vehicleId específicos.
+Entrada: UUID de usuario y UUID de vehículo como parámetros (GET /asignaciones/:userId/:vehicleId)
+Verificar:
+1. Código de respuesta 200
+2. Datos de la respuesta coinciden con la asignación buscada.
+
+CP3.5 Buscar asignación específica por clave compuesta - No encontrada
+Precondiciones: Token JWT con roles suficientes.
+Entrada: Combinación de userId y vehicleId inexistente en el sistema.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error indicando que la asignación no fue encontrada.
+
+CP3.6 Buscar asignación específica por clave compuesta - Parámetros inválidos
+Precondiciones: Token JWT con roles suficientes.
+Entrada: userId o vehicleId con formato inválido (GET /asignaciones/abc/def).
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación (ParseUUIDPipe).
+
+
+Actualizar Asignación (UPDATE, PATCH)
+
+CP4.1 Actualizar asignación ok
+Precondiciones: Token JWT con roles suficientes (ASIGNACIONES_UPDATE) y una asignación creada.
+Entrada: DTO de actualización válido (activa: false, notas: "Notas actualizadas") y parámetros userId y vehicleId (PATCH /asignaciones/:userId/:vehicleId).
+Verificar:
+1. Código de respuesta 200
+2. Datos de respuesta coinciden con los cambios aplicados.
+3. Buscar por clave compuesta para confirmar el cambio en la base de datos.
+
+CP4.2 Actualizar asignación - Not Found
+Precondiciones: Token JWT con roles suficientes.
+Entrada: userId y vehicleId inexistentes y DTO de actualización válido.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error de asignación no encontrada.
+
+CP4.3 Actualizar asignación - Campo activa inválido (No booleano)
+Precondiciones: Token JWT con roles suficientes y una asignación creada.
+Entrada: DTO de actualización con `activa` en formato no booleano (ej: "si" o 1).
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el campo activa.
+
+CP4.4 Actualizar asignación - Notas muy largas (> 500 caracteres)
+Precondiciones: Token JWT con roles suficientes y una asignación creada.
+Entrada: DTO de actualización con notas de más de 500 caracteres.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el campo notas.
+
+CP4.5 Actualizar asignación - Parámetros inválidos (UUID incorrecto)
+Precondiciones: Token JWT con roles suficientes.
+Entrada: userId o vehicleId con formato inválido en la URL.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación (ParseUUIDPipe).
+
+
+Eliminar Asignación (DELETE - Baja Lógica)
+
+CP5.1 Eliminar asignación ok (Baja lógica)
+Precondiciones: Token JWT con roles suficientes (ASIGNACIONES_DELETE) y una asignación activa creada.
+Entrada: userId y vehicleId como parámetros (DELETE /asignaciones/:userId/:vehicleId)
+Verificar:
+1. Código de respuesta 200
+2. Buscar por clave compuesta para confirmar que el estado activa cambió a false.
+
+CP5.2 Eliminar asignación - Not Found
+Precondiciones: Token JWT con roles suficientes.
+Entrada: userId y vehicleId inexistentes.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error de asignación no encontrada.
+
+CP5.3 Eliminar asignación - Conflicto (Ya estaba inactiva)
+Precondiciones: Token JWT con roles suficientes y una asignación previamente dada de baja (activa = false).
+Entrada: userId y vehicleId de la asignación inactiva.
+Verificar:
+1. Código de respuesta 409
+2. Mensaje de error indicando que la asignación ya estaba inactiva.
+
+CP5.4 Eliminar asignación - Parámetros inválidos (UUID incorrecto)
+Precondiciones: Token JWT con roles suficientes.
+Entrada: userId o vehicleId con formato inválido en la URL.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación (ParseUUIDPipe).

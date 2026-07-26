@@ -1,0 +1,171 @@
+Módulo de Usuarios (/users)
+
+Obtener Usuarios (Múltiples resultados)
+
+CP9.1 Listar usuarios ok
+Precondiciones: Token JWT con rol ADMIN o ROOT y permiso USUARIOS_READ, y usuarios registrados.
+Entrada: Ninguna (GET /users) con rol administrador.
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros obtenidos en el array acorde al total existente.
+
+CP9.2 Listar usuarios sin permisos (Forbidden)
+Precondiciones: Token JWT con rol USER estándar (sin rol ADMIN ni ROOT).
+Entrada: Ninguna (GET /users).
+Verificar:
+1. Código de respuesta 403
+2. Mensaje de error indicando que no cuenta con privilegios para listar todos los usuarios.
+
+Obtener Usuario Único
+
+CP10.1 Obtener usuario por ID ok
+Precondiciones: Token JWT de administrador (ADMIN/ROOT) o del propio usuario dueño del ID, con permiso USUARIOS_READ.
+Entrada: UUID válido del usuario como parámetro (GET /users/:id)
+Verificar:
+1. Código de respuesta 200
+2. Datos de la respuesta coinciden con el usuario buscado.
+
+CP10.2 Obtener usuario por ID sin permisos (Forbidden)
+Precondiciones: Token JWT de un usuario estándar intentando consultar el ID de otro usuario diferente.
+Entrada: UUID ajeno como parámetro en GET /users/:id
+Verificar:
+1. Código de respuesta 403
+2. Mensaje de error indicando que solo puede ver sus propios datos.
+
+CP10.3 Obtener usuario por ID not found
+Precondiciones: Token JWT con rol ADMIN/ROOT.
+Entrada: UUID inexistente como parámetro.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error de usuario no encontrado.
+
+CP11.1 Obtener usuario por username ok
+Precondiciones: Token JWT con permisos de lectura y rol ADMIN/ROOT o coincidente con el username consultado.
+Entrada: Username válido como parámetro (GET /users/username/:username)
+Verificar:
+1. Código de respuesta 200
+2. Datos de respuesta coinciden con el usuario.
+
+CP11.2 Obtener usuario por username sin permisos (Forbidden)
+Precondiciones: Token JWT de usuario estándar consultando el username de otro usuario.
+Entrada: Username ajeno en GET /users/username/:username
+Verificar:
+1. Código de respuesta 403
+2. Mensaje de error.
+
+CP11.3 Obtener usuario por username not found
+Precondiciones: Token JWT con rol ADMIN/ROOT.
+Entrada: Username inexistente.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
+
+Actualizar Usuarios (PATCH)
+
+CP12.1 Actualizar usuario ok
+Precondiciones: Token JWT de ADMIN/ROOT o del propio usuario, con permiso USUARIOS_UPDATE, y un usuario existente.
+Entrada: UUID del usuario como parámetro y DTO con datos válidos a actualizar.
+Verificar:
+1. Código de respuesta 200
+2. DTO de respuesta con datos actualizados.
+3. Buscar por Id para confirmar el cambio.
+
+CP12.2 Actualizar usuario sin permisos (Forbidden)
+Precondiciones: Token JWT de usuario estándar intentando modificar los datos de otro usuario.
+Entrada: UUID ajeno y DTO válido en PATCH /users/:id
+Verificar:
+1. Código de respuesta 403
+2. Mensaje de error.
+
+CP12.3 Actualizar usuario not found
+Precondiciones: Token JWT con rol ADMIN/ROOT.
+Entrada: UUID inexistente y DTO válido.
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
+
+CP12.4.1 Actualizar usuario - Password vacío o ausente
+Precondiciones: Token JWT con permisos suficientes y usuario existente.
+Entrada: DTO de actualización con password vacío ("").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la contraseña es obligatoria.
+
+CP12.4.2 Actualizar usuario - Password muy corta (< 8 caracteres)
+Precondiciones: Token JWT con permisos suficientes y usuario existente.
+Entrada: DTO de actualización con password de 7 caracteres ("Pass123").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la contraseña debe tener al menos 8 caracteres.
+
+CP12.4.3 Actualizar usuario - Password sin letras (solo números)
+Precondiciones: Token JWT con permisos suficientes y usuario existente.
+Entrada: DTO de actualización con password numérica ("123456789").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la contraseña debe contener al menos una letra y un número.
+
+CP12.4.4 Actualizar usuario - Password sin números (solo letras)
+Precondiciones: Token JWT con permisos suficientes y usuario existente.
+Entrada: DTO de actualización con password solo de letras ("PasswordABC").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que la contraseña debe contener al menos una letra y un número.
+
+CP12.4.5 Actualizar usuario - Username vacío o ausente
+Precondiciones: Token JWT con permisos suficientes y usuario existente.
+Entrada: DTO de actualización con username vacío.
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el nombre de usuario es obligatorio.
+
+CP12.4.6 Actualizar usuario - Username muy corto (< 3 caracteres)
+Precondiciones: Token JWT con permisos suficientes y usuario existente.
+Entrada: DTO de actualización con username de 2 caracteres ("ab").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que el nombre de usuario debe tener al menos 3 caracteres.
+
+CP12.4.7 Actualizar usuario - Username con letras mayúsculas o caracteres no permitidos
+Precondiciones: Token JWT con permisos suficientes y usuario existente.
+Entrada: DTO de actualización con username conteniendo mayúsculas o símbolos prohibidos ("Juan.Perez" o "juan@perez").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error de validación para el username.
+
+CP12.4.8 Actualizar usuario - Fecha last_login inválida
+Precondiciones: Token JWT con permisos suficientes y usuario existente.
+Entrada: DTO con last_login con formato de fecha inválido ("fecha-invalida").
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error indicando que last_login debe ser una fecha válida.
+
+Activar / Desactivar Usuarios
+
+CP13.1 Activar usuario ok
+Precondiciones: Token JWT con rol y permisos suficientes, y usuario previamente desactivado.
+Entrada: UUID del usuario como parámetro (PATCH /users/activate/:id)
+Verificar:
+1. Código de respuesta 200
+2. Respuesta de éxito y activación confirmada.
+
+CP13.2 Activar usuario not found
+Precondiciones: Token JWT con permisos suficientes.
+Entrada: UUID inexistente en PATCH /users/activate/:id
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
+
+CP14.1 Desactivar usuario ok (Borrado lógico)
+Precondiciones: Token JWT con rol y permisos suficientes (USUARIOS_DELETE), y usuario activo.
+Entrada: UUID del usuario como parámetro (PATCH /users/deactivate/:id)
+Verificar:
+1. Código de respuesta 200
+2. Respuesta de éxito y desactivación confirmada.
+
+CP14.2 Desactivar usuario not found
+Precondiciones: Token JWT con permisos suficientes.
+Entrada: UUID inexistente en PATCH /users/deactivate/:id
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
