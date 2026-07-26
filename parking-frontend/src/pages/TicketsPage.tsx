@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { ticketsApi, espaciosApi, zonasApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import { useEspaciosSSE } from '../hooks/useEspaciosSSE';
 import type { Ticket, Espacio, Zona } from '../types';
 
 export default function TicketsPage() {
-  const { hasPermission, user } = useAuth();
+  const { hasPermission } = useAuth();
   const { addToast, ToastContainer } = useToast();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [espacios, setEspacios] = useState<Espacio[]>([]);
@@ -21,16 +22,22 @@ export default function TicketsPage() {
   const [placa, setPlaca] = useState('');
   const [creating, setCreating] = useState(false);
 
-  // Search
-  const [searchId, setSearchId] = useState('');
-  const [searchedTicket, setSearchedTicket] = useState<Ticket | null>(null);
+  // Búsqueda de tickets activos por cédula del propietario
+  const [searchCedula, setSearchCedula] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [filterLabel, setFilterLabel] = useState('');
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [e, z] = await Promise.all([espaciosApi.getAll(), zonasApi.getAll()]);
+        const [e, z, activos] = await Promise.all([
+          espaciosApi.getAll(),
+          zonasApi.getAll(),
+          ticketsApi.getActivos().catch(() => [] as Ticket[]),
+        ]);
         setEspacios(e);
         setZonas(z);
+        setTickets(activos);
       } catch { /* ignore */ }
       setLoading(false);
     };
@@ -40,6 +47,22 @@ export default function TicketsPage() {
   const refreshEspacios = async () => {
     try { setEspacios(await espaciosApi.getAll()); } catch { /* */ }
   };
+
+  // Recarga todos los tickets activos (quita el filtro por cédula)
+  const reloadActivos = async () => {
+    try {
+      setTickets(await ticketsApi.getActivos());
+      setFilterLabel('');
+    } catch { /* */ }
+  };
+
+  // Monitoreo en vivo (SSE): actualiza el estado de espacios y, si no hay un
+  // filtro por cédula aplicado, refresca la lista de tickets activos.
+  useEspaciosSSE(setEspacios, () => {
+    if (!filterLabel) {
+      ticketsApi.getActivos().then(setTickets).catch(() => { /* */ });
+    }
+  });
 
   const filteredEspacios = selectedZonaFilter
     ? espacios.filter(e => e.idZona === selectedZonaFilter)
@@ -75,22 +98,25 @@ export default function TicketsPage() {
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
+  // Busca los tickets ACTIVOS del propietario a partir de su cédula.
+  const handleSearchByCedula = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = searchId.trim();
-    if (!id) return;
+    const cedula = searchCedula.trim();
+    if (!cedula) return;
+    setSearching(true);
     try {
-      const ticket = await ticketsApi.getById(id);
-      setSearchedTicket(ticket);
-      if (!tickets.find(t => t.id_ticket === ticket.id_ticket)) {
-        setTickets(prev => [ticket, ...prev]);
-      } else {
-        setTickets(prev => prev.map(t => t.id_ticket === ticket.id_ticket ? ticket : t));
-      }
-      addToast('Ticket encontrado', 'success');
+      const activos = await ticketsApi.getActivos(cedula);
+      setTickets(activos);
+      setFilterLabel(`cédula ${cedula}`);
+      setShowSearchModal(false);
+      addToast(
+        activos.length ? `${activos.length} ticket(s) activo(s)` : 'Sin tickets activos para esa cédula',
+        activos.length ? 'success' : 'info',
+      );
     } catch (err: unknown) {
-      addToast(err instanceof Error ? err.message : 'Ticket no encontrado', 'error');
-      setSearchedTicket(null);
+      addToast(err instanceof Error ? err.message : 'Error al buscar tickets', 'error');
+    } finally {
+      setSearching(false);
     }
   };
 
@@ -165,14 +191,23 @@ export default function TicketsPage() {
 
       {/* Tickets table */}
       <div className="card">
-        <div className="card-header">
-          <span className="card-title">Tickets ({tickets.length})</span>
+        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span className="card-title">
+            {filterLabel ? `Tickets activos de ${filterLabel}` : 'Tickets activos'} ({tickets.length})
+          </span>
+          {filterLabel && (
+            <button className="btn btn-xs btn-ghost" onClick={reloadActivos}>✕ Ver todos</button>
+          )}
         </div>
         {tickets.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">🎫</div>
-            <div className="empty-state-title">Sin tickets</div>
-            <div className="empty-state-text">Genera un nuevo ticket o busca uno existente por su ID.</div>
+            <div className="empty-state-title">Sin tickets activos</div>
+            <div className="empty-state-text">
+              {filterLabel
+                ? 'Esa persona no tiene tickets activos.'
+                : 'No hay tickets activos. Genera uno o búscalos por cédula.'}
+            </div>
           </div>
         ) : (
           <div className="table-container">
@@ -324,31 +359,34 @@ export default function TicketsPage() {
         </div>
       )}
 
-      {/* Search Modal */}
+      {/* Search Modal — tickets activos por cédula */}
       {showSearchModal && (
-        <div className="modal-overlay" onClick={() => { setShowSearchModal(false); setSearchedTicket(null); }}>
+        <div className="modal-overlay" onClick={() => setShowSearchModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2 className="modal-title">🔍 Buscar Ticket</h2>
-            <form onSubmit={handleSearch}>
+            <h2 className="modal-title">🔍 Buscar tickets activos</h2>
+            <form onSubmit={handleSearchByCedula}>
               <div className="form-group">
-                <label className="form-label">ID del Ticket (UUID)</label>
-                <input value={searchId} onChange={e => setSearchId(e.target.value.trim())} placeholder="UUID del ticket" required />
+                <label className="form-label">Cédula del propietario</label>
+                <input
+                  value={searchCedula}
+                  onChange={e => setSearchCedula(e.target.value.replace(/\D/g, ''))}
+                  placeholder="1712345678"
+                  maxLength={10}
+                  inputMode="numeric"
+                  autoFocus
+                  required
+                />
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                  Muestra los tickets ACTIVOS registrados a esa persona.
+                </span>
               </div>
               <div className="form-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => { setShowSearchModal(false); setSearchedTicket(null); }}>Cerrar</button>
-                <button type="submit" className="btn btn-primary">Buscar</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setShowSearchModal(false)}>Cerrar</button>
+                <button type="submit" className="btn btn-primary" disabled={searching}>
+                  {searching ? 'Buscando...' : 'Buscar'}
+                </button>
               </div>
             </form>
-            {searchedTicket && (
-              <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg-input)', borderRadius: 'var(--radius-sm)', display: 'grid', gap: '0.35rem', fontSize: '0.85rem' }}>
-                <div><strong>Código:</strong> <span style={{ fontFamily: 'monospace' }}>{searchedTicket.codigo_ticket}</span></div>
-                <div><strong>Placa:</strong> {searchedTicket.placa}</div>
-                <div><strong>Estado:</strong> <span className={`badge ${estadoBadge(searchedTicket.estado_ticket)}`}>{searchedTicket.estado_ticket}</span></div>
-                <div><strong>Ingreso:</strong> {new Date(searchedTicket.fecha_hora_ingreso).toLocaleString('es-EC')}</div>
-                <div><strong>Tarifa:</strong> ${searchedTicket.tarifa_hora_aplicada}/hr</div>
-                {searchedTicket.valor_recaudado != null && <div><strong>Valor:</strong> ${searchedTicket.valor_recaudado.toFixed(2)}</div>}
-              </div>
-            )}
           </div>
         </div>
       )}

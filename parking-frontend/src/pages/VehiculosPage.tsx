@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { vehiculosApi } from '../api';
 import { useToast } from '../hooks/useToast';
+import { useAuth } from '../context/AuthContext';
 import type { Vehiculo, CreateVehiculoRequest, TipoVehiculo, Clasificacion } from '../types';
 
 const TIPOS: TipoVehiculo[] = ['Auto', 'Motocicleta', 'Camioneta'];
@@ -8,6 +9,9 @@ const CLASIFICACIONES: Clasificacion[] = ['Electrico', 'Gasolina', 'Diesel', 'Hi
 
 export default function VehiculosPage() {
   const { addToast, ToastContainer } = useToast();
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission('VEHICULOS_CREATE');
+  const canDelete = hasPermission('VEHICULOS_DELETE');
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -78,7 +82,9 @@ export default function VehiculosPage() {
           <h1 className="page-title">Vehículos</h1>
           <p className="page-subtitle">Todos los vehículos del sistema</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Nuevo Vehículo</button>
+        {canCreate && (
+          <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Nuevo Vehículo</button>
+        )}
       </div>
 
       <div className="card">
@@ -104,7 +110,7 @@ export default function VehiculosPage() {
                   <th>Tipo</th>
                   <th>Combustible</th>
                   <th>Estado</th>
-                  <th>Acciones</th>
+                  {canDelete && <th>Acciones</th>}
                 </tr>
               </thead>
               <tbody>
@@ -122,9 +128,11 @@ export default function VehiculosPage() {
                         {v.activo ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
-                    <td>
-                      <button className="btn btn-xs btn-danger" onClick={() => handleDelete(v.id)}>Eliminar</button>
-                    </td>
+                    {canDelete && (
+                      <td>
+                        <button className="btn btn-xs btn-danger" onClick={() => handleDelete(v.id)}>Eliminar</button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

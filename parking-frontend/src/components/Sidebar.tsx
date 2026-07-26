@@ -3,33 +3,28 @@ import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 
 export default function Sidebar() {
-  const { user, isAdmin, isRecaudador, isCliente, logout } = useAuth();
+  const { user, isAdmin, isRecaudador, isCliente, hasPermission, logout } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Build nav items based on role
+  // Nav construido según capacidades reales del rol:
+  //  - Clientes: su propia experiencia.
+  //  - Gestión (admin/recaudador/root): dashboard + items gateados por permiso,
+  //    así cada rol solo ve lo que realmente puede usar.
   const navItems: { path: string; label: string; icon: string }[] = [];
 
-  if (isAdmin) {
-    navItems.push(
-      { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-      { path: '/zonas', label: 'Zonas & Espacios', icon: '🅿️' },
-      { path: '/tickets', label: 'Tickets', icon: '🎫' },
-      { path: '/vehiculos', label: 'Vehículos', icon: '🚗' },
-      { path: '/usuarios', label: 'Usuarios', icon: '👥' },
-    );
-  } else if (isRecaudador) {
-    navItems.push(
-      { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-      { path: '/tickets', label: 'Tickets', icon: '🎫' },
-      { path: '/vehiculos', label: 'Vehículos', icon: '🚗' },
-    );
-  } else if (isCliente) {
+  if (isCliente) {
     navItems.push(
       { path: '/mi-vehiculo', label: 'Mi Vehículo', icon: '🚗' },
       { path: '/mi-perfil', label: 'Mi Perfil', icon: '👤' },
     );
+  } else {
+    navItems.push({ path: '/dashboard', label: 'Dashboard', icon: '📊' });
+    if (hasPermission('ZONAS_READ')) navItems.push({ path: '/zonas', label: 'Zonas & Espacios', icon: '🅿️' });
+    if (hasPermission('TICKETS_READ')) navItems.push({ path: '/tickets', label: 'Tickets', icon: '🎫' });
+    if (hasPermission('VEHICULOS_READ')) navItems.push({ path: '/vehiculos', label: 'Vehículos', icon: '🚗' });
+    if (hasPermission('USUARIOS_READ')) navItems.push({ path: '/usuarios', label: 'Usuarios', icon: '👥' });
   }
 
   const roleLabel = isAdmin

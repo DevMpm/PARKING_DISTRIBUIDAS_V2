@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { personasApi, rolesApi, roleUsersApi } from '../api';
+import { personasApi, roleUsersApi } from '../api';
 import { useToast } from '../hooks/useToast';
-import type { Persona, Role } from '../types';
+import { useAuth } from '../context/AuthContext';
+import type { Persona } from '../types';
 
 interface UserWithRoles extends Persona {
   assignedRoles: { roleName: string; roleId: string; active: boolean }[];
@@ -11,8 +12,11 @@ const ASSIGNABLE_ROLES = ['CLIENTE', 'RECAUDADOR', 'ADMIN', 'ROOT'];
 
 export default function UsuariosPage() {
   const { addToast, ToastContainer } = useToast();
+  const { hasPermission } = useAuth();
+  const canAssignRole = hasPermission('ROLEUSERS_CREATE');
+  const canToggleActive = hasPermission('USUARIOS_UPDATE');
+  const showActions = canAssignRole || canToggleActive;
   const [users, setUsers] = useState<UserWithRoles[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRoles | null>(null);
@@ -23,12 +27,10 @@ export default function UsuariosPage() {
 
   const loadData = async () => {
     try {
-      const [personas, allRoles, allRoleUsers] = await Promise.all([
+      const [personas, allRoleUsers] = await Promise.all([
         personasApi.getAll(),
-        rolesApi.getAll(),
         roleUsersApi.getAll() as Promise<{ id_user: string; id_role: string; active: boolean; role: { name: string; id: string } }[]>,
       ]);
-      setRoles(allRoles);
 
       const enriched: UserWithRoles[] = personas.map(p => ({
         ...p,
@@ -125,7 +127,7 @@ export default function UsuariosPage() {
                 <th>Email</th>
                 <th>Roles</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                {showActions && <th>Acciones</th>}
               </tr>
             </thead>
             <tbody>
@@ -152,23 +154,29 @@ export default function UsuariosPage() {
                       {u.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.3rem' }}>
-                      <button
-                        className="btn btn-xs btn-primary"
-                        onClick={() => { setSelectedUser(u); setShowRoleModal(true); setSelectedRole(''); }}
-                        title="Asignar rol"
-                      >
-                        🏷️ Rol
-                      </button>
-                      <button
-                        className={`btn btn-xs ${u.activo ? 'btn-danger' : 'btn-success'}`}
-                        onClick={() => handleToggleActive(u)}
-                      >
-                        {u.activo ? 'Desactivar' : 'Activar'}
-                      </button>
-                    </div>
-                  </td>
+                  {showActions && (
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.3rem' }}>
+                        {canAssignRole && (
+                          <button
+                            className="btn btn-xs btn-primary"
+                            onClick={() => { setSelectedUser(u); setShowRoleModal(true); setSelectedRole(''); }}
+                            title="Asignar rol"
+                          >
+                            🏷️ Rol
+                          </button>
+                        )}
+                        {canToggleActive && (
+                          <button
+                            className={`btn btn-xs ${u.activo ? 'btn-danger' : 'btn-success'}`}
+                            onClick={() => handleToggleActive(u)}
+                          >
+                            {u.activo ? 'Desactivar' : 'Activar'}
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

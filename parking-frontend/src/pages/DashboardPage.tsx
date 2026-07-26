@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { zonasApi, espaciosApi } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useEspaciosSSE } from '../hooks/useEspaciosSSE';
 import type { Zona, Espacio } from '../types';
 
 export default function DashboardPage() {
@@ -20,6 +21,9 @@ export default function DashboardPage() {
     };
     load();
   }, []);
+
+  // Monitoreo en vivo de ocupación (SSE)
+  useEspaciosSSE(setEspacios);
 
   const disponibles = espacios.filter(e => e.estado === 'DISPONIBLE').length;
   const ocupados = espacios.filter(e => e.estado === 'OCUPADO').length;

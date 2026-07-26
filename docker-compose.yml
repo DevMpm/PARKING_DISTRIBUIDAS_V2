@@ -125,6 +125,8 @@ services:
       USUARIOS_INTERNAL_URL: http://gestion-usuarios:3001/api/usuarios
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
       AUTHZ_EXCHANGE: ${AUTHZ_EXCHANGE}
+      # Baja el logging TRACE de Spring Security (muy verboso) -> menos latencia/carga
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: WARN
     depends_on:
       db-zonas:
         condition: service_healthy

@@ -11,6 +11,7 @@ interface AuthState {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   hasPermission: (perm: string) => boolean;
+  hasAnyPermission: (perms: string[]) => boolean;
   hasRole: (role: string) => boolean;
   isAdmin: boolean;
   isRecaudador: boolean;
@@ -75,12 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Guarda el par de tokens y actualiza el estado de sesión.
-  const applyTokens = (accessToken: string) => {
+  // Guarda el par de tokens (access + refresh) y actualiza el estado de sesión.
+  const applyTokens = (accessToken: string, refreshToken?: string) => {
     const decoded = decodeToken(accessToken);
     setToken(accessToken);
     setUser(decoded);
     localStorage.setItem('token', accessToken);
+    if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
     setPreAuthToken(null);
     setAvailableRoles([]);
   };
@@ -93,14 +95,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAvailableRoles(res.roles);
       return true;
     }
-    applyTokens(res.access_token);
+    applyTokens(res.access_token, res.refresh_token);
     return false;
   };
 
   const selectRole = async (role: string) => {
     if (!preAuthToken) throw new Error('No hay una selección de rol en curso');
     const res = await authApi.selectRole(role, preAuthToken);
-    applyTokens(res.access_token);
+    applyTokens(res.access_token, res.refresh_token);
   };
 
   const cancelRoleSelection = () => {
@@ -112,11 +114,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
     setPreAuthToken(null);
     setAvailableRoles([]);
   };
 
   const hasPermission = (perm: string) => user?.permissions.includes(perm) ?? false;
+  const hasAnyPermission = (perms: string[]) => perms.some(p => hasPermission(p));
   const hasRole = (role: string) => user?.roles.some(r => r.toUpperCase() === role.toUpperCase()) ?? false;
 
   const isAdmin = hasRole('ROOT') || hasRole('ADMIN');
@@ -126,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       token, user, isAuthenticated: !!token, loading,
-      login, logout, hasPermission, hasRole,
+      login, logout, hasPermission, hasAnyPermission, hasRole,
       isAdmin, isRecaudador, isCliente,
       needsRoleSelection: !!preAuthToken,
       availableRoles, selectRole, cancelRoleSelection,
