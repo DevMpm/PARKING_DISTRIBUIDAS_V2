@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateAuditEventDto } from './dto/create-audit-event.dto';
-import { UpdateAuditDto } from './dto/update-audit.dto';
 import { Repository } from 'typeorm';
 import { EventoAuditoria } from './entities/evento-auditoria.entity';
 import { ApiExtraModels } from '@nestjs/swagger';

@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [gestion-usuarios, assignment-service, VehiclesNPM/vehiculos]
+        service: [gestion-usuarios, assignment-service, VehiclesNPM/vehiculos, ms-auditoria]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -234,6 +234,10 @@ jobs:
                   <div class="card">
                     <h3>Vehículos NPM</h3>
                     <a href="./jest/VehiclesNPM-vehiculos/index.html">Ver cobertura &rarr;</a>
+                  </div>
+                  <div class="card">
+                    <h3>Auditoría NPM</h3>
+                    <a href="./jest/ms-auditoria/index.html">Ver cobertura &rarr;</a>
                   </div>
                 </div>
               </div>

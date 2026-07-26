@@ -1,0 +1,168 @@
+Módulo de Auditoría (/audit)
+
+Endpoints / Operaciones Create (POST /audit)
+
+CP1.1 Crear evento de auditoría - Acción CREATE ok
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_CREATE).
+Entrada: JSON con datos válidos y acción "CREATE".
+Verificar:
+1. Código de respuesta 200 (o 201)
+2. Respuesta DTO con datos correctos.
+3. Buscar por Id (GET /audit/:id) para confirmar creación.
+
+CP1.2 Crear evento de auditoría - Acción UPDATE ok
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_CREATE).
+Entrada: JSON con datos válidos y acción "UPDATE".
+Verificar:
+1. Código de respuesta 200 (o 201)
+2. Respuesta DTO con datos correctos.
+3. Buscar por Id para confirmar creación.
+
+CP1.3 Crear evento de auditoría - Acción DELETE ok
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_CREATE).
+Entrada: JSON con datos válidos y acción "DELETE".
+Verificar:
+1. Código de respuesta 200 (o 201)
+2. Respuesta DTO con datos correctos.
+3. Buscar por Id para confirmar creación.
+
+CP1.4 Crear evento de auditoría - Acción LOGIN ok
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_CREATE).
+Entrada: JSON con datos válidos y acción "LOGIN".
+Verificar:
+1. Código de respuesta 200 (o 201)
+2. Respuesta DTO con datos correctos.
+3. Buscar por Id para confirmar creación.
+
+CP1.5 Crear evento de auditoría - Acción LOGOUT ok
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_CREATE).
+Entrada: JSON con datos válidos y acción "LOGOUT".
+Verificar:
+1. Código de respuesta 200 (o 201)
+3. Respuesta DTO con datos correctos.
+3. Buscar por Id para confirmar creación.
+
+CP1.6 Crear evento de auditoría - Acción SELECT ok
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_CREATE).
+Entrada: JSON con datos válidos y acción "SELECT".
+Verificar:
+1. Código de respuesta 200 (o 201)
+2. Respuesta DTO con datos correctos.
+3. Buscar por Id para confirmar creación.
+
+CP2. Crear evento de auditoría - Duplicado
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_CREATE).
+Entrada: JSON con datos de un evento existente.
+Verificar:
+1. Código de respuesta 409
+2. Mensaje de error.
+
+CP3. Crear evento de auditoría - Datos inválidos (DTO constraints)
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_CREATE).
+Entrada: JSON con datos inválidos por campo (casos CP3.1 - CP3.9):
+- CP3.1 Servicio inválido (menor a 7 caracteres, no comienza con "ms-", o vacío)
+- CP3.2 Acción inválida (acción no permitida o fuera de catálogo)
+- CP3.3 Entidad inválida (minúsculas, espacios, o caracteres no permitidos)
+- CP3.4 EntidadId inválido (formato UUID v4 no válido)
+- CP3.5 Rol inválido (caracteres no permitidos o longitud incorrecta)
+- CP3.6 Datos inválidos (no cumple con ser un objeto JSON)
+- CP3.7 Usuario inválido (caracteres no permitidos o longitud incorrecta)
+- CP3.8 IP inválida (formato IPv4 incorrecto o vacía)
+- CP3.9 MAC inválida (formato de dirección MAC incorrecto)
+Verificar:
+1. Código de respuesta 400
+2. Mensaje de error.
+3. Buscar por Id y verificar que no se creó el registro.
+
+
+Endpoints / Operaciones Get que devuelven varios resultados (GET /audit)
+
+CP4.1 Buscar eventos de auditoría ok
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_READ) y eventos registrados.
+Entrada: Ninguna (GET /audit).
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros obtenidos en la consulta acorde al total existente.
+
+CP4.2 Buscar eventos de auditoría sin resultados
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_READ) y sin registros en la base de datos.
+Entrada: Ninguna (GET /audit).
+Verificar:
+1. Código de respuesta 200
+2. Cantidad de registros obtenidos en la consulta (0).
+
+
+Endpoints / Operaciones Get que devuelven un único resultado (GET /audit/:id)
+
+CP5.1 Buscar evento de auditoría por ID ok
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_READ) y evento existente.
+Entrada: UUID válido del evento como parámetro (GET /audit/:id).
+Verificar:
+1. Código de respuesta 200
+2. Datos de la respuesta coinciden con parámetro de búsqueda.
+
+CP5.2 Buscar evento de auditoría por ID sin resultado
+Precondiciones: Token JWT con rol y permisos suficientes (AUDITORIA_READ).
+Entrada: UUID inexistente como parámetro (GET /audit/:id).
+Verificar:
+1. Código de respuesta 404
+2. Mensaje de error.
+
+
+Consumer de RabbitMQ (AuditConsumer) - Recepción de Eventos
+
+CP6.1 Recibir evento mediante RabbitMQ - Acción CREATE ok
+Precondiciones: Consumidor conectado y escuchando la cola de RabbitMQ.
+Entrada: Mensaje con payload válido y acción "CREATE".
+Verificar:
+1. Procesamiento exitoso y acuse de recibo (ack).
+2. Registro almacenado correctamente en la base de datos de auditoría.
+3. Búsqueda por Id para confirmar creación.
+
+CP6.2 Recibir evento mediante RabbitMQ - Acción UPDATE ok
+Precondiciones: Consumidor conectado y escuchando la cola de RabbitMQ.
+Entrada: Mensaje con payload válido y acción "UPDATE".
+Verificar:
+1. Procesamiento exitoso y acuse de recibo (ack).
+2. Registro almacenado correctamente en la base de datos de auditoría.
+3. Búsqueda por Id para confirmar creación.
+
+CP6.3 Recibir evento mediante RabbitMQ - Acción DELETE ok
+Precondiciones: Consumidor conectado y escuchando la cola de RabbitMQ.
+Entrada: Mensaje con payload válido y acción "DELETE".
+Verificar:
+1. Procesamiento exitoso y acuse de recibo (ack).
+2. Registro almacenado correctamente en la base de datos de auditoría.
+3. Búsqueda por Id para confirmar creación.
+
+CP6.4 Recibir evento mediante RabbitMQ - Acción LOGIN ok
+Precondiciones: Consumidor conectado y escuchando la cola de RabbitMQ.
+Entrada: Mensaje con payload válido y acción "LOGIN".
+Verificar:
+1. Procesamiento exitoso y acuse de recibo (ack).
+2. Registro almacenado correctamente en la base de datos de auditoría.
+3. Búsqueda por Id para confirmar creación.
+
+CP6.5 Recibir evento mediante RabbitMQ - Acción LOGOUT ok
+Precondiciones: Consumidor conectado y escuchando la cola de RabbitMQ.
+Entrada: Mensaje con payload válido y acción "LOGOUT".
+Verificar:
+1. Procesamiento exitoso y acuse de recibo (ack).
+2. Registro almacenado correctamente en la base de datos de auditoría.
+3. Búsqueda por Id para confirmar creación.
+
+CP6.6 Recibir evento mediante RabbitMQ - Acción SELECT ok
+Precondiciones: Consumidor conectado y escuchando la cola de RabbitMQ.
+Entrada: Mensaje con payload válido y acción "SELECT".
+Verificar:
+1. Procesamiento exitoso y acuse de recibo (ack).
+2. Registro almacenado correctamente en la base de datos de auditoría.
+3. Búsqueda por Id para confirmar creación.
+
+CP7. Recibir evento mediante RabbitMQ - Datos inválidos
+Precondiciones: Consumidor conectado y escuchando la cola de RabbitMQ.
+Entrada: Mensaje con datos inválidos (violación de constraints del DTO).
+Verificar:
+1. Detección de error de validación.
+2. Rechazo del mensaje sin reencolar (nack con requeue=false).
+3. Evento no registrado en la base de datos.
