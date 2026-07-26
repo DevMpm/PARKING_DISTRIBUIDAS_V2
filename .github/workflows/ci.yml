@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-jacoco
-          path: ./target/site/jacoco/ # Ajusta si usas Gradle: build/reports/jacoco/test/html/
+          path: ./ModuloZonas/target/site/jacoco/ # Ajusta si usas Gradle: build/reports/jacoco/test/html/
           retention-days: 1
 
   test-node:
@@ -153,6 +153,7 @@ jobs:
   deploy-coverage:
       name: Consolidate & Deploy Coverage Reports
       needs: [test-node, test-java] # Espera a que ambos jobs terminen
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       environment:
         name: github-pages
         url: ${{ steps.deployment.outputs.page_url }}
