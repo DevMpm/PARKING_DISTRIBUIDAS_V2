@@ -60,14 +60,7 @@ jobs:
         working-directory: ./${{ matrix.service }}
         run: npm ci
         
-      - name: Run Unit Tests
-        working-directory: ./${{ matrix.service }}
-        timeout-minutes: 10 
-        env:
-          TESTCONTAINERS_RYUK_DISABLED: 'false'
-        run: npm run test:e2e
-
-      - name: Run Coverage Report
+      - name: Run Tests and Coverage Report
         working-directory: ./${{ matrix.service }}
         timeout-minutes: 10 
         env:
