@@ -28,9 +28,11 @@ jobs:
         run: ./mvnw test
 
       - name: Run Tests & JaCoCo Report
+        working-directory: ./ModuloZonas
         run: mvn clean test jacoco:report # Ajusta si usas Gradle: ./gradlew test jacocoTestReport
 
       - name: Upload JaCoCo Coverage Artifact
+        working-directory: ./ModuloZonas
         uses: actions/upload-artifact@v4
         with:
           name: coverage-jacoco
