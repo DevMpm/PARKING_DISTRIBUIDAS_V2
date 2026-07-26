@@ -158,6 +158,13 @@ jobs:
         url: ${{ steps.deployment.outputs.page_url }}
       runs-on: ubuntu-latest
 
+        # --- AÑADE O REVISA ESTE BLOQUE ---
+      permissions:
+        contents: read
+        pages: write
+        id-token: write  # <--- Este es el permiso que te está pidiendo
+      # ---------------------------------
+
       steps:
         - name: Checkout code (Opcional, para scripts)
           uses: actions/checkout@v4
