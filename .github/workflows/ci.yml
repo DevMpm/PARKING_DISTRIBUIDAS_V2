@@ -67,10 +67,10 @@ jobs:
         run: npm run test:e2e
 
       - name: Run Coverage Report
+        working-directory: ./${{ matrix.service }}
         timeout-minutes: 10 
           env:
             TESTCONTAINERS_RYUK_DISABLED: 'false'
-        working-directory: ./${{ matrix.service }}
         run: npm run test:cov
 
       # Normalizar el nombre del servicio para usarlo como nombre de artefacto/carpeta

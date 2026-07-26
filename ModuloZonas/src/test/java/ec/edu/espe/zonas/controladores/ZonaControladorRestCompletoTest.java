@@ -9,6 +9,7 @@ import ec.edu.espe.zonas.dominio.entidades.TipoZona;
 import ec.edu.espe.zonas.dominio.entidades.Zona;
 import ec.edu.espe.zonas.dominio.repositorios.EspacioRepositorio;
 import ec.edu.espe.zonas.dominio.repositorios.ZonaRepositorio;
+import ec.edu.espe.zonas.setup.MockDatasource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 
@@ -32,15 +34,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Transactional
 @TestPropertySource(properties = {
-    "spring.datasource.url=jdbc:postgresql://localhost:5433/test",
-    "spring.datasource.driver-class-name=org.postgresql.Driver",
-    "spring.datasource.username=postgres",
-    "spring.datasource.password=12345",
     "spring.jpa.hibernate.ddl-auto=create-drop",
     "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect",
     "spring.rabbitmq.listener.simple.auto-startup=false"
 })
-class ZonaControladorRestCompletoTest {
+class ZonaControladorRestCompletoTest extends MockDatasource{
+
 
     private MockMvc mockMvc;
 
@@ -55,6 +54,7 @@ class ZonaControladorRestCompletoTest {
 
     @Autowired
     private EspacioRepositorio espacioRepositorio;
+
 
     @BeforeEach
     void setUp() {
