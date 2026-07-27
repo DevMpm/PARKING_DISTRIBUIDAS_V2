@@ -17,4 +17,5 @@ Vehiculos:
 Asignaciones:
  Entidades: assignment-service/src/asignaciones/entities
  DTOs: assignment-service/src/asignaciones/dto
+ Controladores: assignment-service/src/asignaciones/asignaciones.controller.ts
  Servicios: assignment-service/src/asignaciones/asignaciones.service.ts

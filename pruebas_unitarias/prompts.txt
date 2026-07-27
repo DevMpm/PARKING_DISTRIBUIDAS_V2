@@ -365,4 +365,65 @@ Considera los siguientes aspectos:
 
 Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes modificarlas para forzar a que aprueben, solo comunícamelas en el @test_log.txt. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
 
-Como estoy manejando pruebas unitarias "sociales", trabaja sobre los archivos ".e2e-spec.ts" en la carpeta test. Al terminar, apunta el comando npm run test:cov a las pruebas e2e-spect.ts, y elimina el archivo @ms-auditoria/test/app.e2e-spec.ts
+Como estoy manejando pruebas unitarias "sociales", trabaja sobre los archivos ".e2e-spec.ts" en la carpeta test. Al terminar, apunta el comando npm run test:cov a las pruebas e2e-spect.ts, y elimina el archivo @ms-auditoria/test/app.e2e-spec.ts.
+
+
+----------------- Tickets Plan ---------------------------
+Con base en la siguiente estructura y guía, crea una lista de casos de prueba "CP" para el módulo de tickets en la carpeta @ticket-service/app
+- Los casos de prueba corresponderán a pruebas de estilo REST sobre los diferentes endpoints en la carpeta @ticket-service/app/api/v1/ 
+
+- Puedes revisar la lógica de todo el módulo de tickets, @ticket-service/app/. Sin embargo, te recomiendo seguir esta estructura para definir los casos:
+
+Endpoints/Operaciones Create
+
+- CP Crear ok → Verificar 200, Respuesta con datos correctos, Buscar por Id para confirmar creación.
+- CP Crear duplicado - Verificar 409 y mensaje de error.
+- CP datos inválidos, Maneja al menos un caso por campo y constraint del DTO. → Verificar 400 y mensaje de error.
+
+Endpoints/Operaciones Get que devuelven varios resultados.
+
+- CP Buscar ok → Verificar 200 y cantidad de registros obtenidos en la consulta.
+(Si buscan por un parámetro también va este caso:)
+- CP Buscar sin resultados → Verificar 200 y cantidad de registros obtenidos (0).
+
+Endpoints/Operaciones Get que devuelven un único resultado.
+
+- CP Buscar ok → Verificar 200, Datos de la respuesta coinciden con parámetro de búsqueda.
+- CP Buscar sin resultado → Verificar 404 y mensaje de error.
+
+Casos específicos, estos son algunos casos de lógica que he identificado y quiero que incorpores:
+→ Crear ticket con un vehículo, usuario o espacio no existente
+→ Crear ticket sobre un espacio no disponible
+→ Crear ticket para un usuario o vehiculo inactivo.
+→ Crear ticket para una asignación (usuario-vehículo) inexistente o desactivada.
+
+Agrega al final de cada caso de prueba que represente un escenario exitoso(ok), una verificación del envío de eventos mediante el producer de RabbitMQ @ticket-service/app/utils/rabbitmq_publisher.py.
+
+Toma como referencia los archivos ya existentes en @/pruebas_unitarias con los nombres que comienzan en "cp_" para la elaboración de los casos y sigue su nomenclatura y estructura: Precondiciones, Entrada y Verificar. 
+
+Genera únicamente la lista de casos en el archivo "cp_tickets" en la carpeta @pruebas_unitarias/, aún no escribas código de pruebas.
+------------- Tickets exec ------------------------
+Con base en el archivo @/puebas_unitarias/cp_tickets.txt, crea e implementa las pruebas unitarias sociables en FastAPI que permitan probar el módulo de tickets desde un punto de vista REST en modo (controlador real → servicio real → mock datasource).
+Considera los siguientes aspectos:
+- Como los endpoints están protegidos por JWT, puedes trabajar con un mock que cuente con los permisos necesarios, para que el control pase. Revisa los archivos de controlador en la carpeta @ticket-service/app/api/v1/ y la configuración de seguridad en los archivos: @ticket-service/app/core/auth.py, @ticket-service/app/core/dependencies.py y @ticket-service/app/core/permissions_cache.py para tener un panorama completo de como funcionan los flujos de autorización.
+- Puedes guiarte por los archivos de dto en la carpeta @ticket-service/app/schemas/ticket.py,  y por los servicios en el archivo @ticket-service/app/services/ticket_service.py:
+ para entender las validaciones, mensajes de error y lógica que manejan, pero no puedes modificarlos. 
+- Puedes usar los servicios para acciones que formen parte de las verificaciones o Precondiciones, como crear zonas, espacios o hacer una búsqueda.
+- Si es necesario agregar dependencias al módulo @ticket-service puedes hacerlo, pero no puedes manipular dependencias ya existentes. Como recomendación, te entrego este stack:
+→ pip install pytest pytest-asyncio pytest-mock
+→ pip install aio-pika          
+→ pip install testcontainers[postgres]   
+→ pip install httpx             
+→ pip install pydantic          
+→ pip install sqlalchemy asyncpg  
+
+
+Trabaja dentro de una carpeta "test" @ticket-service/app/ no modifiques archivos de fuera de la carpeta test sin permiso. Si lo consideras necesario, indícame la razón y yo revisaré antes de autorizarlo. Si detectas un cambio que no hayas realizado, es un cambio hecho por mí, entonces no debes quitarlo.
+- Para las pruebas, si lo necesitas, usa un testcontainer de postgres, revisa la configuración de pruebas en @VehiclesNPM/vehiculos/test y usa los archivos e2e-spec.ts ya existentes como referencia, adaptando a python lo que te sea útil.
+- También necesitarás construir un mock del producer de rabbitmq, puedes revisar losa archivos de @ticket-service/app/services/ y @ticket-service/app/utils/rabbitmq_publisher.py para tener un contexto más preciso.
+- No olvides incluir los casos adicionales o sub-casos de prueba, se escriben con la palabra clave "CP". 
+- Para las operaciones que consumen otros servicios como clientes, puedes revisar las referencias en @pruebas_unitarias/archivos_entidades_dtos.txt
+
+Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes modificarlas para forzar a que aprueben, solo comunícamelas en el @test_log.txt. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
+
+Al terminar, ejecuta un comando de coverage normarl y uno para generar reporte de cobertura html.
