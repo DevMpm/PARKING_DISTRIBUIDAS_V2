@@ -232,6 +232,49 @@ El backend del sistema representa un ejemplo robusto de ingeniería de software 
 * **Resiliencia y Health Checks:**
   * Todos los contenedores de Docker Compose integran sondas de salud (`healthcheck`) con `pg_isready` y comprobaciones HTTP, asegurando que los servicios no arranquen hasta que sus dependencias y bases de datos estén 100% operativas.
 
+  ### Flujo de Autenticación
+  
+  ```mermaid
+  sequenceDiagram
+      participant cliente
+      participant msgu as ms-gestion-usuarios
+
+      cliente->>msgu: Login Data (User + Password)
+      msgu->>msgu: Verifica usuario y roles
+
+      alt Usuario con 1 Rol
+          msgu-->>cliente: JWT Access + Refresh token
+      else Usuario con varios roles
+          msgu-->>cliente: JWT Preaccess+Refresh token
+          cliente->>cliente: Selecciona un rol
+          cliente->>msgu: Rol Seleccionado + Service ID [JWT]
+          msgu->>msgu: Genera JWT con el rol escogido
+          msgu-->>cliente: JWT Access
+      end
+  ```
+
+  ### Flujo de Autorización
+  ```mermaid
+  sequenceDiagram
+      participant cliente as Cliente
+      participant msc1 as ms-consumidor
+      participant msc2 as ms-consumidor
+
+      cliente->>msc1: Petición HTTP con JWT
+      msc1->>msc1: Revisar caché de permisos
+
+      alt Permisos no encontrados
+          msc1->>msc2: Rol + ID Servicio
+          msc2->>msc2: Resuelve permisos por rol
+          msc2-->>msc1: Permisos del rol
+          msc1->>msc1: Guarda permisos en caché
+      else Permisos en caché
+      end
+
+      msc1->>msc1: Revisa los permisos necesarios
+      msc1-->>cliente: Respuesta JSON o 403
+  ```
+
 ---
 
 ## 🖥️ 4. Capa Frontend: Experiencia e Interfaz
@@ -253,6 +296,7 @@ El proyecto cuenta con un riguroso plan de pruebas automáticas, de regresión y
 ### 📎 Enlaces a Documentos de Pruebas Oficiales:
 * 📘 **[Documento de Pruebas y Estrategia de Validación](./DOCUMENTO_DE_PRUEBAS.md)**: Detalla la arquitectura de pruebas, instrucciones para ejecutar las suites automatizadas de Python (`pytest`), pruebas E2E en Playwright, configuración del entorno efímero de test y uso de colecciones de Postman.
 * 📋 **[Matriz y Especificación de Casos de Prueba](./CASOS_DE_PRUEBA.md)**: Documento técnico que compila la totalidad de casos de prueba (CP) por microservicio, con precondiciones, entradas y criterios exactos de verificación (incluyendo enlaces directos a los scripts de la carpeta `pruebas_unitarias/`).
+* 📊 **[Reporte de Cobertura de Pruebas Unitarias](https://eduardomortensen.github.io/PARKING_DISTRIBUIDAS_V2/)**: Sitio web desplegado con la cobertura en los distintos módulos probados.
 
 ### Resumen de Ejecución Rápida:
 ```bash

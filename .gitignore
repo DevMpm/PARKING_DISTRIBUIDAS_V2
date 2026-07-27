@@ -6,3 +6,6 @@ venv/
 /.claude/
 ### Open Code ####
 AGENTS.md
+
+.claude/
+.devcontainer/

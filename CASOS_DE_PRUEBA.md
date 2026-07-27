@@ -17,49 +17,30 @@ Cada caso de prueba en el sistema está documentado bajo un estándar riguroso d
   3. Efecto secundario esperado (Ej. Evento emitido a RabbitMQ, registro insertado en tabla de auditoría).
 
 ---
+## 2. Inventario completo de Casos de Prueba
+Todos los casos de pruebas unitarias ejecutadas se encuentran en el siguiente documento:
+#### [Reporte Casos de Prueba](./reporte_pruebas/main.pdf)
+---
 
-## 2. Inventario de Suites de Pruebas por Módulo
+## 3. Inventario de Suites de Pruebas por Módulo
 
 A continuación, se presentan las suites de casos de prueba organizadas por dominio funcional con enlaces directos a sus especificaciones completas detalladas en el directorio `pruebas_unitarias/`:
 
 | Módulo / Microservicio | Archivo de Especificación | Alcance y Cobertura Principal |
 | :--- | :--- | :--- |
-| **Autenticación y Usuarios** | [cp_usuarios.txt](./pruebas_unitarias/cp_usuarios.txt) | Login JWT, validación de credenciales, bloqueo por reintentos, CRUD de usuarios e inhabilitación. |
-| **Gestión de Roles** | [cp_roles.txt](./pruebas_unitarias/cp_roles.txt) | Creación de roles, jerarquías, roles del sistema inmutables (`ROOT`, `ADMIN`, `USER`). |
-| **Gestión de Permisos** | [cp_permissions.txt](./pruebas_unitarias/cp_permissions.txt) | Catálogo granular de permisos, validación de unicidad de claves y descripciones. |
-| **Asignación Roles-Usuarios** | [cp_roleusers.txt](./pruebas_unitarias/cp_roleusers.txt) | Vinculación y desvinculación de roles a cuentas de usuario, prevención de remoción al último root. |
-| **Asignación Roles-Permisos** | [cp_rolepermissions.txt](./pruebas_unitarias/cp_rolepermissions.txt) | Mapeo dinámico de privilegios a roles, re-evaluación en tiempo de ejecución. |
-| **Propietarios y Personas** | [cp_personas.txt](./pruebas_unitarias/cp_personas.txt) | Registro de personas naturales y jurídicas, validación de DNI/RUC y unicidad de correo. |
-| **Vehículos y Categorías** | [cp_vehículos.txt](./pruebas_unitarias/cp_vehículos.txt) | Validación de formato de placas, clasificación (Automóvil, Motocicleta, Institucional), asociación a propietarios. |
-| **Zonas de Parqueo** | [cp_zonas.txt](./pruebas_unitarias/cp_zonas.txt) | Creación de zonas (Cubierta, Descubierta, VIP), límites de capacidad, modificación de tarifas y horarios. |
-| **Espacios Individuales** | [cp_espacios.txt](./pruebas_unitarias/cp_espacios.txt) | Generación automática y manual de espacios, cambio de estado (Libre, Ocupado, Mantenimiento). |
-| **Servicio de Tickets (Tarifas)** | [cp_tickets](./pruebas_unitarias/cp_tickets) | Ingreso de vehículos, cálculo de tarifa por fracción/hora, vehículos institucionales (tarifa $0.00), anulación y salida. |
-| **Asignaciones de Parqueo** | [cp_asignaciones](./pruebas_unitarias/cp_asignaciones) | Asignación fija de espacios a autoridades o docentes, validación de conflictos de reserva. |
-| **Auditoria Centralizada** | [cp_auditoria](./pruebas_unitarias/cp_auditoria) | Registro inmutable de eventos críticos, traza de IP, usuario y timestamp, consultas filtradas. |
-| **API Gateway & Seguridad** | [cp_gateway](./pruebas_unitarias/cp_gateway) | Enrutamiento inverso en Kong, validación de API Keys internas, rechazo de peticiones externas a puertos privados. |
-
----
-
-## 3. Ejemplos Destacados de Casos de Prueba Críticos
-
-### 🎟️ Módulo de Tickets: Emisión de Ticket para Vehículo Institucional (CP1_5)
-* **Objetivo:** Verificar que el ingreso de un vehículo catalogado como "Institucional" genere un ticket válido con exención de pago.
-* **Precondición:** Vehículo con placa `INST-001` registrado como tipo `INSTITUCIONAL` y un espacio desocupado disponible.
-* **Entrada:** `POST /api/v1/tickets` con payload `{ "placa": "INST-001", "id_espacio": "<uuid>" }`.
-* **Resultado Esperado:**
-  1. HTTP Status `201 Created`.
-  2. Estado del ticket `ACTIVO` y tarifa aplicada `0.00`.
-  3. El estado del espacio en `ms-core` cambia asíncronamente a `OCUPADO`.
-  4. Emisión exitosa del evento `ticket.creado` a RabbitMQ para auditoría.
-
-### 🛡️ Módulo de Seguridad: Intento de Acceso No Autorizado a Recurso Protegido (CP9.2)
-* **Objetivo:** Asegurar el cumplimiento estricto del control de acceso basado en roles (RBAC).
-* **Precondición:** Usuario autenticado con rol estándar `USER` (sin permiso `USUARIOS_READ`).
-* **Entrada:** `GET /users` adjuntando el token Bearer en el encabezado `Authorization`.
-* **Resultado Esperado:**
-  1. HTTP Status `403 Forbidden`.
-  2. Respuesta JSON: `{ "error": "Forbidden", "message": "No cuenta con los permisos necesarios para realizar esta acción." }`.
-  3. Generación de evento de auditoría de alerta por intento de acceso denegado.
+| **Usuarios** | [cp_usuarios.txt](./pruebas_unitarias/cp_usuarios.txt) | CRUD completo de usuarios, validación de contraseñas (longitud mínima, obligatoriedad), restricciones de acceso por rol (`ADMIN`/`ROOT` vs `USER`), búsqueda por ID/username e inhabilitación. |
+| **Gestión de Roles** | [cp_roles.txt](./pruebas_unitarias/cp_roles.txt) | Creación y administración de roles, jerarquías, validación de nombres únicos y protección de roles del sistema inmutables (`ROOT`, `ADMIN`, `USER`). |
+| **Gestión de Permisos** | [cp_permissions.txt](./pruebas_unitarias/cp_permissions.txt) | Catálogo granular de permisos, validación de unicidad de claves (`name`), restricciones de longitud y servicios asociados. |
+| **Asignación Roles-Usuarios** | [cp_roleusers.txt](./pruebas_unitarias/cp_roleusers.txt) | Vinculación y desvinculación de roles a cuentas de usuario, prevención de remoción de privilegios críticos al último usuario `ROOT`. |
+| **Asignación Roles-Permisos** | [cp_rolepermissions.txt](./pruebas_unitarias/cp_rolepermissions.txt) | Mapeo dinámico de privilegios a roles, asociación y desasociación de permisos granulares. |
+| **Propietarios y Personas** | [cp_personas.txt](./pruebas_unitarias/cp_personas.txt) | CRUD de personas físicas/jurídicas, validación rigurosa de formato DNI/RUC, unicidad de correo y estados operativos. |
+| **Vehículos y Categorías** | [cp_vehículos.txt](./pruebas_unitarias/cp_vehículos.txt) | Validación de formato de placas, clasificación vehicular (Automóvil, Motocicleta, Camioneta) y control de estado activo/inactivo. |
+| **Zonas de Parqueo** | [cp_zonas.txt](./pruebas_unitarias/cp_zonas.txt) | Creación de zonas, límites de capacidad, modificación de tarifas y horarios, filtrado por tipos y disponibilidad de espacios. |
+| **Espacios Individuales** | [cp_espacios.txt](./pruebas_unitarias/cp_espacios.txt) | Generación automática y manual de espacios, cambio de estados (Libre, Ocupado, Mantenimiento) y validación de compatibilidad con tipos de vehículos. |
+| **Servicio de Tickets (Tarifas)** | [cp_tickets](./pruebas_unitarias/cp_tickets) | Ingreso y salida de vehículos, cálculo de tarifa por fracción/hora, exenciones institucionales, validación de estados y emisión de eventos asíncronos vía RabbitMQ. |
+| **Asignaciones de Parqueo** | [cp_asignaciones](./pruebas_unitarias/cp_asignaciones) | Asignación fija de espacios/vehículos a usuarios (autoridades/docentes), prevención de conflictos de reserva activos/inactivos y consulta de flota por propietario. |
+| **Auditoria Centralizada** | [cp_auditoria](./pruebas_unitarias/cp_auditoria) | Registro inmutable de eventos críticos (CREATE, UPDATE, DELETE, LOGIN, LOGOUT, SELECT), validación de DTOs (IP, MAC, servicio, entidadId) y consultas filtradas. |
+| **API Gateway & Seguridad** | [cp_gateway](./pruebas_unitarias/cp_gateway) | Enrutamiento inverso en Kong, consulta de estado de vehículos, autorización de ingresos con validación de cupo (modo estricto y `permitirSinValidarCupo`) y registro *walk-in*. |
 
 ---
 

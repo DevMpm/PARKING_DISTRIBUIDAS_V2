@@ -500,3 +500,51 @@ Las precondiciones en lugar de separar por comas, se deben separar en itemize. S
 - Precondiciones va en Precondiciones
 - En datos de entrada o pasos, coloca la entrada.
 - En resultado esperado, traduce los "Verificar"
+
+Aquí tienes ambos diagramas convertidos a sintaxis Mermaid:
+
+**Diagrama 1 — Login y generación de JWT**
+
+```mermaid
+sequenceDiagram
+    participant cliente
+    participant msgu as ms-gestion-usuarios
+
+    cliente->>msgu: Login Data (User + Password)
+    msgu->>msgu: Verifica usuario y roles
+
+    alt Usuario con 1 Rol
+        msgu-->>cliente: JWT Access + Refresh token
+    else Usuario con varios roles
+        msgu-->>cliente: JWT Preaccess+Refresh token
+        cliente->>cliente: Selecciona un rol
+        cliente->>msgu: Rol Seleccionado + Service ID [JWT]
+        msgu->>msgu: Genera JWT con el rol escogido
+        msgu-->>cliente: JWT Access
+    end
+```
+
+**Diagrama 2 — Consulta de permisos con caché**
+
+```mermaid
+sequenceDiagram
+    participant cliente as Cliente
+    participant msc1 as ms-consumidor
+    participant msc2 as ms-consumidor
+
+    cliente->>msc1: Petición HTTP con JWT
+    msc1->>msc1: Revisar caché de permisos
+
+    alt Permisos no encontrados
+        msc1->>msc2: Rol + ID Servicio
+        msc2->>msc2: Resuelve permisos por rol
+        msc2-->>msc1: Permisos del rol
+        msc1->>msc1: Guarda permisos en caché
+    else Permisos en caché
+    end
+
+    msc1->>msc1: Revisa los permisos necesarios
+    msc1-->>cliente: Respuesta JSON o 403
+```
+
+Nota: en el segundo diagrama los dos participantes se llaman igual (`ms-consumidor`) en tu imagen original, así que usé alias `msc1`/`msc2` internamente pero mantuve el nombre visible idéntico para ambos, tal como aparece en el diagrama. Si en realidad son instancias/servicios distintos, dime cómo quieres diferenciarlos (por ejemplo "ms-consumidor" y "ms-permisos") y lo ajusto.
