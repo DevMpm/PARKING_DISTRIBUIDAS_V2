@@ -116,8 +116,8 @@ jobs:
           path: ./ticket-service/htmlcov/
           retention-days: 1
 
-  test-e2e:
-    name: End-to-End Tests (Docker Compose)
+  test-integration:
+    name: Integration Tests (Docker Compose)
     runs-on: ubuntu-latest
     needs: [test-java, test-node, test-python]
     steps:
@@ -152,10 +152,65 @@ jobs:
         if: failure()
         run: docker compose logs
 
+  test-frontend-e2e:
+    name: Test Frontend E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: [test-integration]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  deploy-coverage:
-      name: Consolidate & Deploy Coverage Reports
-      needs: [test-node, test-java, test-python] # Espera a que todos los jobs terminen
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: './parking-frontend/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./parking-frontend
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        working-directory: ./parking-frontend
+        run: npx playwright install --with-deps
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Start Docker Compose infrastructure
+        run: docker compose up -d --build
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to initialize..."
+          sleep 45
+          docker compose ps
+
+      - name: Run Playwright E2E Tests
+        working-directory: ./parking-frontend
+        run: npm run e2e
+        env:
+          CI: true
+
+      - name: View Logs on Failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Upload Playwright Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: ./parking-frontend/test-results/
+          retention-days: 7
+
+  
+
+
+  deploy-test-reports:
+      name: Consolidate & Deploy Test Reports
+      needs: [test-frontend-e2e] # Espera a que todos los jobs terminen
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       environment:
         name: github-pages
@@ -185,6 +240,7 @@ jobs:
             mkdir -p public/jest
             mkdir -p public/jacoco
             mkdir -p public/python
+            mkdir -p public/e2e
 
             # Copiar reporte de JaCoCo
             if [ -d "artifacts/coverage-jacoco" ]; then
@@ -194,6 +250,11 @@ jobs:
             # Copiar reporte de Python (ticket-service)
             if [ -d "artifacts/coverage-python-ticket-service" ]; then
               cp -r artifacts/coverage-python-ticket-service/* public/python/
+            fi
+
+            # Copiar reporte de Playwright E2E
+            if [ -d "artifacts/playwright-report" ]; then
+              cp -r artifacts/playwright-report/* public/e2e/
             fi
 
             # Copiar reportes de NestJS (iterar sobre los artefactos descargados)
@@ -213,7 +274,7 @@ jobs:
             <head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Dashboard de Cobertura</title>
+              <title>Dashboard de Pruebas</title>
               <style>
                 body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #24292f; }
                 h1 { border-bottom: 1px solid #d0d7de; padding-bottom: 10px; }
@@ -226,43 +287,55 @@ jobs:
               </style>
             </head>
             <body>
-              <h1>📊 Cobertura de Código</h1>
+              <h1>📊 Dashboard de Pruebas</h1>
 
               <div class="section">
-                <h2>Java Backend (JaCoCo)</h2>
-                <div class="card">
-                  <h3>Servicio Java</h3>
-                  <a href="./jacoco/index.html">Ver reporte de cobertura &rarr;</a>
+                <h2>Pruebas Unitarias</h2>
+                
+                <div style="margin-bottom: 20px;">
+                  <h3 style="font-size: 18px; color: #57606a;">Java Backend (JaCoCo)</h3>
+                  <div class="card">
+                    <h3>Servicio Java (ModuloZonas)</h3>
+                    <a href="./jacoco/index.html">Ver reporte de cobertura &rarr;</a>
+                  </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                  <h3 style="font-size: 18px; color: #57606a;">Python Microservice (Pytest)</h3>
+                  <div class="card">
+                    <h3>Ticket Service</h3>
+                    <a href="./python/index.html">Ver reporte de cobertura &rarr;</a>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 style="font-size: 18px; color: #57606a;">Microservicios NestJS (Jest)</h3>
+                  <div class="grid">
+                    <div class="card">
+                      <h3>Gestión Usuarios</h3>
+                      <a href="./jest/gestion-usuarios/index.html">Ver cobertura &rarr;</a>
+                    </div>
+                    <div class="card">
+                      <h3>Assignment Service</h3>
+                      <a href="./jest/assignment-service/index.html">Ver cobertura &rarr;</a>
+                    </div>
+                    <div class="card">
+                      <h3>Vehículos NPM</h3>
+                      <a href="./jest/VehiclesNPM-vehiculos/index.html">Ver cobertura &rarr;</a>
+                    </div>
+                    <div class="card">
+                      <h3>Auditoría NPM</h3>
+                      <a href="./jest/ms-auditoria/index.html">Ver cobertura &rarr;</a>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div class="section">
-                <h2>Python Microservice (Pytest)</h2>
+                <h2>Pruebas End-to-End (E2E)</h2>
                 <div class="card">
-                  <h3>Ticket Service</h3>
-                  <a href="./python/index.html">Ver reporte de cobertura &rarr;</a>
-                </div>
-              </div>
-
-              <div class="section">
-                <h2>Microservicios NestJS (Jest)</h2>
-                <div class="grid">
-                  <div class="card">
-                    <h3>Gestión Usuarios</h3>
-                    <a href="./jest/gestion-usuarios/index.html">Ver cobertura &rarr;</a>
-                  </div>
-                  <div class="card">
-                    <h3>Assignment Service</h3>
-                    <a href="./jest/assignment-service/index.html">Ver cobertura &rarr;</a>
-                  </div>
-                  <div class="card">
-                    <h3>Vehículos NPM</h3>
-                    <a href="./jest/VehiclesNPM-vehiculos/index.html">Ver cobertura &rarr;</a>
-                  </div>
-                  <div class="card">
-                    <h3>Auditoría NPM</h3>
-                    <a href="./jest/ms-auditoria/index.html">Ver cobertura &rarr;</a>
-                  </div>
+                  <h3>Frontend E2E (Playwright)</h3>
+                  <a href="./e2e/index.html">Ver reporte E2E &rarr;</a>
                 </div>
               </div>
             </body>
