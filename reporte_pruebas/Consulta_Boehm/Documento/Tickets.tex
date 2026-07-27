@@ -1,0 +1,269 @@
+\section{Tickets}
+\subsection{Módulo de Tickets (/tickets)}
+
+\subsection{Crear Ticket (POST /tickets/)}
+
+\casodeprueba{CP1.1}
+{Crear ticket ok}
+{Token JWT con roles suficientes (TICKETS\_CREATE), espacio creado y DISPONIBLE, vehículo existente, y empleado autenticado vía X-User-Id.}
+{JSON con id\_espacio válido (UUID), placa válida (str), id\_usuario opcional (UUID) (POST /tickets/).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta DTO con datos correctos del ticket creado (código de ticket generado, estado ACTIVO, tarifa aplicada, etc.).
+    \item Buscar por Id (GET /tickets/:id\_ticket) para confirmar su existencia.
+    \item Verificación del envío de eventos mediante el producer de RabbitMQ (ticket-service/app/utils/rabbitmq\_publisher.py) con evento 'created' y payload con id\_espacio y estado 'OCUPADO'.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Crear ticket - Espacio ya ocupado (Duplicado)}
+{Token JWT con roles suficientes y un espacio que ya tiene un ticket activo asociado.}
+{JSON con id\_espacio ocupado y placa válida.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que el espacio ya tiene un ticket activo (EspacioOcupadoException).
+\end{enumerate}}
+
+\casodeprueba{CP1.3}
+{Crear ticket - Espacio no disponible}
+{Token JWT con roles suficientes y un espacio cuyo estado no es 'DISPONIBLE' (ej. 'MANTENIMIENTO' u 'OCUPADO').}
+{JSON con id\_espacio no disponible y placa válida.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409 (EspacioNoDisponibleException)
+    \item Mensaje de error indicando que el espacio no está disponible.
+\end{enumerate}}
+
+\casodeprueba{CP1.4}
+{Crear ticket - Vehículo no existente}
+{Token JWT con roles suficientes y un espacio DISPONIBLE.}
+{JSON con placa de un vehículo que no existe en el servicio de vehículos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404 (VehiculoNoEncontradoException)
+    \item Mensaje de error indicando que el vehículo no existe.
+\end{enumerate}}
+
+\casodeprueba{CP1.5}
+{Crear ticket - Vehículo inactivo}
+{Token JWT con roles suficientes, espacio DISPONIBLE y un vehículo con estado inactivo en el sistema.}
+{JSON con la placa del vehículo inactivo.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400 y mensaje de error indicando que el vehículo está inactivo.
+\end{enumerate}}
+
+\casodeprueba{CP1.6}
+{Crear ticket - Usuario inactivo}
+{Token JWT con roles suficientes, espacio DISPONIBLE y un usuario propietario inactivo en gestion-usuarios.}
+{JSON con datos de ticket vinculados al usuario inactivo.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400 o 409 y mensaje de error indicando que el usuario está inactivo.
+\end{enumerate}}
+
+\casodeprueba{CP1.7}
+{Crear ticket - Asignación (usuario-vehículo) inexistente o desactivada}
+{Token JWT con roles suficientes, espacio DISPONIBLE, vehículo sin propietario directo cuyo vehículo requiere asignación activa pero la asignación no existe o está desactivada (activa = false).}
+{JSON con placa del vehículo sin asignación activa.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400/404 y mensaje de error indicando que no se pudo determinar el usuario o que la asignación no es válida.
+\end{enumerate}}
+
+\casodeprueba{CP1.8}
+{Crear ticket - Espacio no compatible con el tipo de vehículo}
+{Token JWT con roles suficientes, espacio DISPONIBLE de tipo 'MOTO' y un vehículo que es 'AUTO' (o viceversa).}
+{JSON con id\_espacio de moto y placa de auto.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400 (EstadoInvalidoException)
+    \item Mensaje de error indicando incompatibilidad entre el tipo de espacio y el tipo de vehículo.
+\end{enumerate}}
+
+\casodeprueba{CP1.9.1}
+{Crear ticket - id\_espacio inválido (No UUID o ausente)}
+{Token JWT con roles suficientes.}
+{JSON con id\_espacio inválido (ej: '123-abc' o ausente).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación del DTO (TicketCreate) para id\_espacio.
+\end{enumerate}}
+
+\casodeprueba{CP1.9.2}
+{Crear ticket - placa inválida o ausente (vacía o > 15 caracteres)}
+{Token JWT con roles suficientes.}
+{JSON con placa vacía `''` o de más de 15 caracteres o ausente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación del DTO (TicketCreate) para la placa.
+\end{enumerate}}
+
+\casodeprueba{CP1.9.3}
+{Crear ticket - id\_usuario inválido (No UUID)}
+{Token JWT con roles suficientes.}
+{JSON con id\_usuario con formato inválido (ej: 'no-uuid').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación del DTO (TicketCreate) para id\_usuario.
+\end{enumerate}}
+
+\casodeprueba{CP2.1}
+{Listar tickets activos ok}
+{Token JWT con permisos suficientes (TICKETS\_READ) y varios tickets activos creados en el sistema.}
+{Ninguna (GET /tickets/).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en el array acorde al total de tickets activos.
+\end{enumerate}}
+
+\casodeprueba{CP2.2}
+{Listar tickets activos sin resultados}
+{Token JWT con permisos suficientes y sin tickets activos en el sistema.}
+{Ninguna (GET /tickets/).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos (0, array vacío).
+\end{enumerate}}
+
+\casodeprueba{CP2.3}
+{Listar tickets activos por cédula ok}
+{Token JWT con permisos suficientes y tickets activos asociados a un propietario con una cédula específica.}
+{Parámetro de consulta `?cedula=<dni>` (GET /tickets/?cedula=1234567890).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos filtrados correctamente por el propietario de la cédula.
+\end{enumerate}}
+
+\casodeprueba{CP2.4}
+{Listar tickets activos por cédula sin resultados (cédula inexistente)}
+{Token JWT con permisos suficientes.}
+{Parámetro de consulta `?cedula=9999999999` (cédula que no existe).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos (0, array vacío).
+\end{enumerate}}
+
+\casodeprueba{CP2.5}
+{Listar tickets activos por id\_usuario ok}
+{Token JWT con permisos suficientes y tickets activos asociados a un `id\_usuario` específico.}
+{Parámetro de consulta `?id\_usuario=<uuid>` (GET /tickets/?id\_usuario=...).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos filtrados por el usuario.
+\end{enumerate}}
+
+\casodeprueba{CP2.6}
+{Listar tickets activos por id\_usuario sin resultados}
+{Token JWT con permisos suficientes.}
+{Parámetro de consulta `?id\_usuario=<uuid-inexistente>`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos (0, array vacío).
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Obtener ticket por ID ok}
+{Token JWT con permisos suficientes y un ticket creado en el sistema.}
+{UUID del ticket como parámetro de ruta (GET /tickets/:id\_ticket).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden exactamente con el ticket buscado (id\_ticket, placa, código, estado, etc.).
+\end{enumerate}}
+
+\casodeprueba{CP3.2}
+{Obtener ticket por ID no existente}
+{Token JWT con permisos suficientes.}
+{UUID inexistente (GET /tickets/:id\_ticket).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404 (TicketNoEncontradoException)
+    \item Mensaje de error indicando que no existe un ticket con el id proporcionado.
+\end{enumerate}}
+
+\casodeprueba{CP3.3}
+{Obtener ticket por ID con formato inválido}
+{Token JWT con permisos suficientes.}
+{UUID con formato inválido en la ruta (GET /tickets/abc-123).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación de formato UUID.
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Registrar salida de ticket ok}
+{Token JWT con permisos suficientes (TICKETS\_UPDATE) y un ticket en estado ACTIVO.}
+{UUID del ticket en la ruta y DTO opcional de salida con fecha\_hora\_salida (PATCH /tickets/:id\_ticket/salida).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta con estado cambiado a PAGADO, fecha\_hora\_salida registrada y valor\_recaudado calculado correctamente.
+    \item Buscar por Id (GET /tickets/:id\_ticket) para confirmar el cambio de estado y cálculo de cobro.
+    \item Verificación del envío de eventos mediante el producer de RabbitMQ (ticket-service/app/utils/rabbitmq\_publisher.py) con evento 'salida\_registrada' y payload con id\_espacio y estado 'DISPONIBLE'.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Registrar salida - Ticket no existente}
+{Token JWT con permisos suficientes.}
+{UUID de ticket inexistente y DTO válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404 (TicketNoEncontradoException)
+    \item Mensaje de error indicando que el ticket no fue encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP4.3}
+{Registrar salida - Ticket no activo (ya pagado o anulado)}
+{Token JWT con permisos suficientes y un ticket cuyo estado es PAGADO o ANULADO.}
+{UUID del ticket inactivo y DTO válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400 (EstadoInvalidoException)
+    \item Mensaje de error indicando que el ticket no está activo.
+\end{enumerate}}
+
+\casodeprueba{CP4.4}
+{Registrar salida - id\_ticket inválido (No UUID)}
+{Token JWT con permisos suficientes.}
+{UUID con formato inválido en la ruta.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación de formato UUID.
+\end{enumerate}}
+
+\casodeprueba{CP5.1}
+{Anular ticket ok}
+{Token JWT con permisos suficientes (TICKETS\_UPDATE) y un ticket en estado ACTIVO.}
+{UUID del ticket en la ruta y DTO con motivo de anulación (PATCH /tickets/:id\_ticket/anular).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta con estado cambiado a ANULADO.
+    \item Buscar por Id (GET /tickets/:id\_ticket) para confirmar el estado anulado y la liberación del espacio.
+    \item Verificación del envío de eventos mediante el producer de RabbitMQ (ticket-service/app/utils/rabbitmq\_publisher.py) con evento 'anulado' y payload con id\_espacio y estado 'DISPONIBLE'.
+\end{enumerate}}
+
+\casodeprueba{CP5.2}
+{Anular ticket - Ticket no existente}
+{Token JWT con permisos suficientes.}
+{UUID de ticket inexistente y motivo válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404 (TicketNoEncontradoException)
+    \item Mensaje de error indicando que el ticket no fue encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP5.3}
+{Anular ticket - Ticket no activo (ya pagado o anulado)}
+{Token JWT con permisos suficientes y un ticket en estado PAGADO o ANULADO.}
+{UUID del ticket no activo.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400 (EstadoInvalidoException)
+    \item Mensaje de error indicando que solo se pueden anular tickets activos.
+\end{enumerate}}
+
+\casodeprueba{CP5.4}
+{Anular ticket - id\_ticket inválido (No UUID)}
+{Token JWT con permisos suficientes.}
+{UUID con formato inválido en la ruta.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación de formato UUID.
+\end{enumerate}}
+
+\casodeprueba{CP5.5}
+{Anular ticket - Motivo muy largo (> 255 caracteres)}
+{Token JWT con permisos suficientes y un ticket ACTIVO.}
+{DTO de anulación con motivo de más de 255 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación del DTO (TicketAnular) para el campo motivo.
+\end{enumerate}}
+

@@ -1,0 +1,199 @@
+\section{Auditoría}
+\subsection{Módulo de Auditoría (/audit)}
+
+\subsection{Endpoints / Operaciones Create (POST /audit)}
+
+\casodeprueba{CP1.1}
+{Crear evento de auditoría - Acción CREATE ok}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_CREATE).}
+{JSON con datos válidos y acción 'CREATE'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 (o 201)
+    \item Respuesta DTO con datos correctos.
+    \item Buscar por Id (GET /audit/:id) para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Crear evento de auditoría - Acción UPDATE ok}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_CREATE).}
+{JSON con datos válidos y acción 'UPDATE'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 (o 201)
+    \item Respuesta DTO con datos correctos.
+    \item Buscar por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP1.3}
+{Crear evento de auditoría - Acción DELETE ok}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_CREATE).}
+{JSON con datos válidos y acción 'DELETE'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 (o 201)
+    \item Respuesta DTO con datos correctos.
+    \item Buscar por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP1.4}
+{Crear evento de auditoría - Acción LOGIN ok}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_CREATE).}
+{JSON con datos válidos y acción 'LOGIN'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 (o 201)
+    \item Respuesta DTO con datos correctos.
+    \item Buscar por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP1.5}
+{Crear evento de auditoría - Acción LOGOUT ok}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_CREATE).}
+{JSON con datos válidos y acción 'LOGOUT'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 (o 201)
+    \item Respuesta DTO con datos correctos.
+    \item Buscar por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP1.6}
+{Crear evento de auditoría - Acción SELECT ok}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_CREATE).}
+{JSON con datos válidos y acción 'SELECT'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 (o 201)
+    \item Respuesta DTO con datos correctos.
+    \item Buscar por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP2}
+{Crear evento de auditoría - Duplicado}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_CREATE).}
+{JSON con datos de un evento existente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP3}
+{Crear evento de auditoría - Datos inválidos (DTO constraints)}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_CREATE).}
+{JSON con datos inválidos por campo (casos CP3.1 - CP3.9):}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item CP3.1 Servicio inválido (menor a 7 caracteres, no comienza con 'ms-', o vacío)
+    \item CP3.2 Acción inválida (acción no permitida o fuera de catálogo)
+    \item CP3.3 Entidad inválida (minúsculas, espacios, o caracteres no permitidos)
+    \item CP3.4 EntidadId inválido (formato UUID v4 no válido)
+    \item CP3.5 Rol inválido (caracteres no permitidos o longitud incorrecta)
+    \item CP3.6 Datos inválidos (no cumple con ser un objeto JSON)
+    \item CP3.7 Usuario inválido (caracteres no permitidos o longitud incorrecta)
+    \item CP3.8 IP inválida (formato IPv4 incorrecto o vacía)
+    \item CP3.9 MAC inválida (formato de dirección MAC incorrecto)
+    \item Código de respuesta 400
+    \item Mensaje de error.
+    \item Buscar por Id y verificar que no se creó el registro.
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Buscar eventos de auditoría ok}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_READ) y eventos registrados.}
+{Ninguna (GET /audit).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en la consulta acorde al total existente.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Buscar eventos de auditoría sin resultados}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_READ) y sin registros en la base de datos.}
+{Ninguna (GET /audit).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en la consulta (0).
+\end{enumerate}}
+
+\casodeprueba{CP5.1}
+{Buscar evento de auditoría por ID ok}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_READ) y evento existente.}
+{UUID válido del evento como parámetro (GET /audit/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden con parámetro de búsqueda.
+\end{enumerate}}
+
+\casodeprueba{CP5.2}
+{Buscar evento de auditoría por ID sin resultado}
+{Token JWT con rol y permisos suficientes (AUDITORIA\_READ).}
+{UUID inexistente como parámetro (GET /audit/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP6.1}
+{Recibir evento mediante RabbitMQ - Acción CREATE ok}
+{Consumidor conectado y escuchando la cola de RabbitMQ.}
+{Mensaje con payload válido y acción 'CREATE'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Procesamiento exitoso y acuse de recibo (ack).
+    \item Registro almacenado correctamente en la base de datos de auditoría.
+    \item Búsqueda por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP6.2}
+{Recibir evento mediante RabbitMQ - Acción UPDATE ok}
+{Consumidor conectado y escuchando la cola de RabbitMQ.}
+{Mensaje con payload válido y acción 'UPDATE'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Procesamiento exitoso y acuse de recibo (ack).
+    \item Registro almacenado correctamente en la base de datos de auditoría.
+    \item Búsqueda por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP6.3}
+{Recibir evento mediante RabbitMQ - Acción DELETE ok}
+{Consumidor conectado y escuchando la cola de RabbitMQ.}
+{Mensaje con payload válido y acción 'DELETE'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Procesamiento exitoso y acuse de recibo (ack).
+    \item Registro almacenado correctamente en la base de datos de auditoría.
+    \item Búsqueda por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP6.4}
+{Recibir evento mediante RabbitMQ - Acción LOGIN ok}
+{Consumidor conectado y escuchando la cola de RabbitMQ.}
+{Mensaje con payload válido y acción 'LOGIN'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Procesamiento exitoso y acuse de recibo (ack).
+    \item Registro almacenado correctamente en la base de datos de auditoría.
+    \item Búsqueda por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP6.5}
+{Recibir evento mediante RabbitMQ - Acción LOGOUT ok}
+{Consumidor conectado y escuchando la cola de RabbitMQ.}
+{Mensaje con payload válido y acción 'LOGOUT'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Procesamiento exitoso y acuse de recibo (ack).
+    \item Registro almacenado correctamente en la base de datos de auditoría.
+    \item Búsqueda por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP6.6}
+{Recibir evento mediante RabbitMQ - Acción SELECT ok}
+{Consumidor conectado y escuchando la cola de RabbitMQ.}
+{Mensaje con payload válido y acción 'SELECT'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Procesamiento exitoso y acuse de recibo (ack).
+    \item Registro almacenado correctamente en la base de datos de auditoría.
+    \item Búsqueda por Id para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP7}
+{Recibir evento mediante RabbitMQ - Datos inválidos}
+{Consumidor conectado y escuchando la cola de RabbitMQ.}
+{Mensaje con datos inválidos (violación de constraints del DTO).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Detección de error de validación.
+    \item Rechazo del mensaje sin reencolar (nack con requeue=false).
+    \item Evento no registrado en la base de datos.
+\end{enumerate}}
+

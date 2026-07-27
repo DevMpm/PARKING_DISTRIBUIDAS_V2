@@ -1,0 +1,403 @@
+\section{Personas}
+\subsection{Módulo de Personas (/personas)}
+
+\subsection{Operación Create (POST /personas)}
+
+\casodeprueba{CP1.1}
+{Crear persona ok}
+{Token JWT con permisos suficientes (o acceso público según configuración del endpoint)}
+{JSON con datos válidos de persona (address: 'Av. 10 de Agosto', dni: '1712345678', email: 'juan.perez@example.com', firstName: 'Juan', lastName: 'Pérez', nationality: 'Ecuatoriana', phone: '+593991234567')}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta DTO con datos correctos de la persona creada.
+    \item Buscar por Id (GET /personas/:id) para confirmar su existencia.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Crear persona duplicada (DNI o email)}
+{Token JWT y una persona previamente registrada con DNI '1712345678' o email 'juan.perez@example.com'.}
+{JSON repitiendo el DNI o email existente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando conflicto (DNI o email ya existente).
+\end{enumerate}}
+
+\casodeprueba{CP1.3.1}
+{Crear persona - DNI vacío o ausente}
+{Token JWT con permisos suficientes}
+{JSON con dni omitido o vacío ('').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el DNI es obligatorio.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.2}
+{Crear persona - DNI longitud menor a 10 dígitos}
+{Token JWT con permisos suficientes}
+{JSON con dni de 9 dígitos ('171234567').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la cédula ecuatoriana debe tener 10 dígitos.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.3}
+{Crear persona - DNI longitud mayor a 10 dígitos}
+{Token JWT con permisos suficientes}
+{JSON con dni de 11 dígitos ('17123456789').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la cédula ecuatoriana debe tener 10 dígitos.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.4}
+{Crear persona - DNI con caracteres no numéricos}
+{Token JWT con permisos suficientes}
+{JSON con dni que contiene letras o símbolos ('171234567A').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el DNI.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.5}
+{Crear persona - DNI con dígito verificador ecuatoriano inválido}
+{Token JWT con permisos suficientes}
+{JSON con 10 dígitos numéricos pero inválidos según el algoritmo de cédula ecuatoriana ('1799999999').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación del DNI ecuatoriano.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.6}
+{Crear persona - Email vacío o ausente}
+{Token JWT con permisos suficientes}
+{JSON con email omitido o vacío.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el email es obligatorio.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.7}
+{Crear persona - Email con formato inválido}
+{Token JWT con permisos suficientes}
+{JSON con email sin arroba o dominio ('juan.perez' or 'juan@com').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el email no tiene un formato válido.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.8}
+{Crear persona - Email excediendo 50 caracteres}
+{Token JWT con permisos suficientes}
+{JSON con email mayor a 50 caracteres ('muy.largo.correo.electronico.de.prueba.que.supera.los.cincuenta.caracteres@example.com').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el email no puede tener más de 50 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.9}
+{Crear persona - Primer nombre vacío o ausente}
+{Token JWT con permisos suficientes}
+{JSON con firstName omitido o vacío ('').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el primer nombre es obligatorio.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.10}
+{Crear persona - Primer nombre muy corto (< 2 caracteres)}
+{Token JWT con permisos suficientes}
+{JSON con firstName de 1 carácter ('J').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el primer nombre debe tener al menos 2 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.11}
+{Crear persona - Primer nombre muy largo (> 30 caracteres)}
+{Token JWT con permisos suficientes}
+{JSON con firstName de 31 letras.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el primer nombre no puede tener más de 30 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.12}
+{Crear persona - Primer nombre con números o símbolos}
+{Token JWT con permisos suficientes}
+{JSON con firstName conteniendo dígitos o símbolos ('Juan123' or 'Juan!').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el primer nombre solo puede contener letras y espacios.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.13}
+{Crear persona - Primer nombre con solo espacios}
+{Token JWT con permisos suficientes}
+{JSON con firstName de espacios en blanco ('   ').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el nombre no puede estar vacío o ser solo espacios.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.14}
+{Crear persona - Apellido vacío o ausente}
+{Token JWT con permisos suficientes}
+{JSON con lastName omitido o vacío.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el apellido es obligatorio.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.15}
+{Crear persona - Apellido muy corto (< 2 caracteres)}
+{Token JWT con permisos suficientes}
+{JSON con lastName de 1 carácter ('P').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el apellido debe tener al menos 2 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.16}
+{Crear persona - Apellido muy largo (> 30 caracteres)}
+{Token JWT con permisos suficientes}
+{JSON con lastName de 31 letras.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el apellido no puede tener más de 30 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.17}
+{Crear persona - Apellido con números o símbolos}
+{Token JWT con permisos suficientes}
+{JSON con lastName conteniendo números o símbolos ('Pérez123').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el apellido solo puede contener letras y espacios.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.18}
+{Crear persona - Segundo nombre inválido (más de 30 caracteres, números o símbolos)}
+{Token JWT con permisos suficientes}
+{JSON con middleName inválido (ej. 'Carlos123' o un string > 30 caracteres).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el segundo nombre.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.19}
+{Crear persona - Nacionalidad vacía o ausente}
+{Token JWT con permisos suficientes}
+{JSON con nationality omitida o vacía.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la nacionalidad es obligatoria.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.20}
+{Crear persona - Nacionalidad muy corta (< 3 caracteres)}
+{Token JWT con permisos suficientes}
+{JSON con nationality de 2 caracteres ('Ec').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la nacionalidad no puede tener menos de 3 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.21}
+{Crear persona - Nacionalidad muy larga (> 30 caracteres)}
+{Token JWT con permisos suficientes}
+{JSON con nationality de 31 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la nacionalidad no puede tener más de 30 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.22}
+{Crear persona - Nacionalidad con números o símbolos no permitidos}
+{Token JWT con permisos suficientes}
+{JSON con nationality conteniendo números ('Ecuatoriana123').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la nacionalidad solo puede contener espacios y letras.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.23}
+{Crear persona - Teléfono vacío o ausente}
+{Token JWT con permisos suficientes}
+{JSON con phone omitido o vacío.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el teléfono es obligatorio.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.24}
+{Crear persona - Teléfono muy corto (< 5 dígitos)}
+{Token JWT con permisos suficientes}
+{JSON con phone de 4 dígitos ('1234').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el número de teléfono no puede tener menos de 5 dígitos.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.25}
+{Crear persona - Teléfono muy largo (> 17 caracteres)}
+{Token JWT con permisos suficientes}
+{JSON con phone de 18 caracteres ('+59399123456789012').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el teléfono no puede tener más de 17 dígitos.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.26}
+{Crear persona - Teléfono con formato inválido (letras)}
+{Token JWT con permisos suficientes}
+{JSON con phone conteniendo letras ('+593ABC4567').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el teléfono solo puede contener números, espacios, + y -.
+\end{enumerate}}
+
+\casodeprueba{CP2.1}
+{Listar personas ok}
+{Token JWT con rol y permiso USUARIOS\_READ, y personas registradas en el sistema.}
+{Ninguna (GET /personas)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en el array acorde al total existente.
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Obtener persona por ID ok}
+{Token JWT con rol y permiso USUARIOS\_READ, y una persona creada.}
+{UUID válido de la persona como parámetro (GET /personas/:id)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden con la persona buscada.
+\end{enumerate}}
+
+\casodeprueba{CP3.2}
+{Obtener persona por ID not found}
+{Token JWT con rol y permiso USUARIOS\_READ.}
+{UUID inexistente como parámetro.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error indicando que la persona no fue encontrada.
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Verificar si persona existe (Existe)}
+{Persona creada en el sistema.}
+{UUID válido existente en GET /personas/exists/:id}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Respuesta JSON con { exists: true }.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Verificar si persona existe (No existe)}
+{Ninguna.}
+{UUID inexistente en GET /personas/exists/:id}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Respuesta JSON con { exists: false }.
+\end{enumerate}}
+
+\casodeprueba{CP5.1}
+{Obtener persona por DNI ok}
+{Token JWT con rol y permiso USUARIOS\_READ, y una persona creada.}
+{DNI válido de 10 dígitos como parámetro (GET /personas/dni/:dni)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden con el DNI consultado.
+\end{enumerate}}
+
+\casodeprueba{CP5.2}
+{Obtener persona por DNI not found}
+{Token JWT con rol y permiso USUARIOS\_READ.}
+{DNI no registrado en el sistema.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de persona no encontrada.
+\end{enumerate}}
+
+\casodeprueba{CP6.1}
+{Actualizar persona ok}
+{Token JWT con rol y permiso USUARIOS\_UPDATE, y una persona creada.}
+{UUID de la persona como parámetro y DTO con campos actualizados válidos (ej. teléfono o email).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item DTO de respuesta con los datos actualizados correctamente.
+    \item Buscar por Id (GET /personas/:id) para confirmar el cambio en la base de datos.
+\end{enumerate}}
+
+\casodeprueba{CP6.2}
+{Actualizar persona not found}
+{Token JWT con rol y permiso USUARIOS\_UPDATE.}
+{UUID inexistente y DTO válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de persona no encontrada.
+\end{enumerate}}
+
+\casodeprueba{CP6.3.1}
+{Actualizar persona - Email inválido}
+{Token JWT con rol y permiso USUARIOS\_UPDATE, y una persona creada.}
+{DTO de actualización con email con formato inválido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el email.
+\end{enumerate}}
+
+\casodeprueba{CP6.3.2}
+{Actualizar persona - Primer nombre inválido}
+{Token JWT con rol y permiso USUARIOS\_UPDATE, y una persona creada.}
+{DTO de actualización con firstName con caracteres no permitidos o longitud inválida.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP6.3.3}
+{Actualizar persona - Teléfono inválido}
+{Token JWT con rol y permiso USUARIOS\_UPDATE, y una persona creada.}
+{DTO de actualización con phone inválido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el teléfono.
+\end{enumerate}}
+
+\casodeprueba{CP7.1}
+{Activar persona ok}
+{Token JWT con rol y permiso USUARIOS\_UPDATE, y una persona previamente desactivada.}
+{UUID de la persona como parámetro (PATCH /personas/activate/:id)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Respuesta indicando éxito y confirmación de activación.
+\end{enumerate}}
+
+\casodeprueba{CP7.2}
+{Activar persona not found}
+{Token JWT con rol y permiso USUARIOS\_UPDATE.}
+{UUID inexistente en PATCH /personas/activate/:id}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP8.1}
+{Desactivar persona ok (Borrado lógico)}
+{Token JWT con rol y permiso USUARIOS\_DELETE, y una persona activa.}
+{UUID de la persona como parámetro (PATCH /personas/deactivate/:id)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Respuesta indicando éxito y cambio de estado a inactivo.
+\end{enumerate}}
+
+\casodeprueba{CP8.2}
+{Desactivar persona not found}
+{Token JWT con rol y permiso USUARIOS\_DELETE.}
+{UUID inexistente en PATCH /personas/deactivate/:id}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+

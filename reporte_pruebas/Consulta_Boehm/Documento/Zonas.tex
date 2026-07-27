@@ -1,0 +1,175 @@
+\section{Zonas}
+\subsection{Crear Zona}
+
+\casodeprueba{CP1}
+{Crear una zona con datos correctos.}
+{Token JWT con roles suficientes}
+{JSON con datos válidos}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta DTO con datos correctos.
+    \item Verificar formato del código de la zona.
+    \item Buscar zona y encontrar que existe.
+\end{enumerate}}
+
+\casodeprueba{CP2}
+{(Caso adicional, zona con datos correctos y tipo en minúsculas)}
+{Token JWT con roles suficientes}
+{JSON con datos válidos}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Se verifica el cumplimiento de la operación.
+\end{enumerate}}
+
+\casodeprueba{CP3}
+{Crear zona con datos incorrectos.}
+{Token JWT con roles suficientes}
+{JSON con datos inválidos (4 casos separados. CP3.1-CP3.4)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Nombre inválido
+    \item Nombre duplicado
+    \item Tipo inválido
+    \item Capacidad invalida
+    \item Códigos de respuesta 400 o 409 en el caso del duplicado
+    \item Mensajes de error
+    \item Buscar zona y no encontrar.
+\end{enumerate}}
+
+\casodeprueba{CP4}
+{Obtener zonas normal}
+{Token JWT con roles suficientes y 4 zonas creadas.}
+{Ninguna}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Cantidad de registros en el array.
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Obtener zonas desocupadas si hay}
+{Token JWT con roles suficientes y 4 zonas creadas cada una con 1 espacio.}
+{Ninguna}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros en el array.
+    \item Verificar los espacios desocupados en las zonas de respuesta.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Obtener zonas desocupadas si no hay}
+{Token JWT con roles suficientes y 4 zonas creadas cada una con 1 espacio.}
+{Ninguna}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Cantidad de registros en el array.
+\end{enumerate}}
+
+\casodeprueba{CP5}
+{CP9. Obtener zonas por tipo}
+{Token JWT con roles suficientes y 1 zona creada por cada tipo.}
+{Ninguna}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Tipo de zona como parámetro
+    \item Cantidad de resultados de cada búsqueda
+    \item Código de la zona obtenida (Debe coincidir con el tipo buscado)
+\end{enumerate}}
+
+\casodeprueba{CP10.1}
+{Actualizar descripcion}
+{Token JWT con roles suficientes y 1 zona creada.}
+{DTO con datos para cambiar la descripcion. UUID de la zona a cambiar como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item DTO de respuesta con datos actualizados
+    \item Buscar zonas y verificar los cambios.
+\end{enumerate}}
+
+\casodeprueba{CP10.2}
+{Igual al caso anterior pero se cambia la entrada para usar valor inválido en descripción}
+{Token JWT con roles suficientes y 1 zona creada.}
+{DTO con valor inválido para cambiar la descripción. UUID de la zona a cambiar como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 400
+    \item Buscar zonas y verificar que no se cambió la descripción.
+\end{enumerate}}
+
+\casodeprueba{CP11.1}
+{Actualizar capacidad}
+{Token JWT con roles suficientes y 1 zona creada.}
+{DTO con datos para cambiar la capacidad. UUID de la zona a cambiar como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item DTO de respuesta con datos actualizados
+    \item Buscar zonas y verificar los cambios.
+\end{enumerate}}
+
+\casodeprueba{CP11.2}
+{Igual al caso anterior pero se cambia la entrada para usar valor inválido en capacidad}
+{Token JWT con roles suficientes y 1 zona creada.}
+{DTO con valor inválido para cambiar la capacidad. UUID de la zona a cambiar como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 400
+    \item Buscar zonas y verificar que no se cambió la capacidad.
+\end{enumerate}}
+
+\casodeprueba{CP12.1}
+{Actualizar tipo}
+{Token JWT con roles suficientes y 1 zona creada.}
+{DTO con datos para cambiar el tipo. UUID de la zona a cambiar como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item DTO de respuesta con datos actualizados
+    \item Buscar zonas y verificar los cambios.
+\end{enumerate}}
+
+\casodeprueba{CP12.2}
+{Igual al caso anterior pero se cambia la entrada para usar valor inválido en capazidad}
+{Token JWT con roles suficientes y 1 zona creada.}
+{DTO con valor inválido para cambiar el tipo. UUID de la zona a cambiar como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 400
+    \item Buscar zonas y verificar que no se cambió el tipo
+\end{enumerate}}
+
+\casodeprueba{CP13.1}
+{Actualizar Estado (Desactivar)}
+{Token JWT con roles suficientes y 1 zona creada con 2 espacios.}
+{DTO con datos para cambiar el estado a desactivado. UUID de la zona a cambiar como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item DTO de respuesta con datos actualizados
+    \item Buscar zonas y verificar los cambios.
+    \item Buscar los espacios de la zona y verificar el cambio de estado.
+\end{enumerate}}
+
+\casodeprueba{CP13.2}
+{Usa los datos de la zona desactivada para reactivarla.}
+{Zona desactivada en el caso anterior}
+{DTO con datos para reactivar la zona. UUID de la zona como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item DTO de respuesta con datos actualizados
+    \item Buscar zonas y verificar los cambios.
+    \item Buscar los espacios de la zona y verificar que su estado no se ha cambiado.
+\end{enumerate}}
+
+\casodeprueba{CP14.1}
+{Activar/Desactivar Zona}
+{Token JWT con roles suficientes y 1 zona creada con 2 espacios.}
+{UUID de la zona a cambiar como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item DTO de respuesta con datos actualizados
+    \item Buscar zonas y verificar los cambios.
+    \item Buscar los espacios de la zona y verificar el cambio de estado.
+\end{enumerate}}
+
+\casodeprueba{CP14.2}
+{Usa los datos de la zona desactivada para reactivarla.}
+{Zona desactivada en el caso anterior}
+{UUID de la zona desactivada como parámetro}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item DTO de respuesta con datos actualizados
+    \item Buscar zonas y verificar los cambios.
+    \item Buscar los espacios de la zona y verificar que su estado no se ha cambiado.
+\end{enumerate}}
+

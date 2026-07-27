@@ -427,3 +427,76 @@ Trabaja dentro de una carpeta "test" @ticket-service/app/ no modifiques archivos
 Muy importante: Estoy manejando un enfoque de TDD(Test Driven Development), las pruebas están diseñadas para probar reglas de negocio y lógica. Esto significa que está bien si las pruebas fallan por tema de bugs o incoherencias lógicas; si detectas esas causas de errores no intentes modificarlas para forzar a que aprueben, solo comunícamelas en el @test_log.txt. En caso de errores causados por dependencias, compilación o fallos técnicos, tienes la libertad de intentar cambiarlas.
 
 Al terminar, ejecuta un comando de coverage normarl y uno para generar reporte de cobertura html.
+-------------------- Mapeo de Casos de prueba a tablas -----------------
+En el proyecto de latex ubicado en la carpeta @reporte_pruebas, agrega esta función, con los respectivos packages necesarios.:
+
+\definecolor{HeaderColor}{RGB}{180, 198, 231}
+
+% 2. Creamos la "función" (comando) con 7 argumentos
+% #1: Identificador
+% #2: Descripción
+% #3: Precondiciones
+% #4: Datos de entrada/Pasos
+% #5: Resultado Esperado
+
+\newcommand{\casodeprueba}[5]{
+    \begingroup
+    \renewcommand{\arraystretch}{1.8} % Altura de las filas para que no se vea amontonado
+    \noindent
+    \begin{tabularx}{0.9\textwidth}{|>{\columncolor{HeaderColor}\bfseries\raggedright\arraybackslash}p{4.5cm}|X|}
+    \hline
+    IDENTIFICADOR & #1 \\ \hline
+    DESCRIPCIÓN & #2 \\ \hline
+    PRECONDICIONES & #3 \\ \hline
+    DATOS DE ENTRADA/PASOS & #4 \\ \hline
+    RESULTADO ESPERADO & #5 \\ \hline
+    \end{tabularx}
+    \endgroup
+    \vspace{1cm}
+}
+
+Y prueba a crear una instancia de esta función en el archivo @reporte_pruebas/Consulta_Boehm/Documento/Documento.tex haciendo un mapeo de los casos de prueba del archivo @pruebas_unitarias/cp_zonas.txt de la siguiente manera:
+
+- El identificador es el CP y los números
+- Precondiciones va en Precondiciones
+- En datos de entrada o pasos, coloca la entrada.
+- En resultado esperado, traduce los "Verificar"
+------- Casos de Prueba Full translate ------------------
+En base al caso de prueba: CP1 el el documento reporte_pruebas/Consulta_Boehm/Documento/Documento.tex, realiza los siguientes cambios:
+1. Separa el archivo @reporte_pruebas/Consulta_Boehm/Documento/Documento.tex en secciones, el mismo número de secciones que el número de archivos "cp_" en @pruebas_unitarias/. Cada sección debe tener su propio documento tex con el nombre de uno de los txt con "cp_". El archivo Documento.tex debe referenciar al contenido de estos documentos. Limpia el resto del contenido ya existente en Documento.tex
+
+1.5 El orden de las secciones debe ser el siguente:
+- Zonas
+- Espacios
+- Vehiculos
+- Personas
+- usuarios
+- Roles
+- Roles usuarios
+- Permisos
+- Roles Permisos
+- Gateway
+- Asignaciones
+- Tickets
+- Auditoria
+
+2. En cada sección traduce los casos de prueba del archivo "cp_" txt con el mismo nombre del .tex con este formato:
+\casodeprueba{CP1}
+{Crear una zona con datos correctos.}
+{Token JWT con roles suficientes}
+{JSON con datos válidos}
+{
+\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta DTO con datos correctos. 
+    \item El formato del código de la zona es correcto. 
+    \item Al buscar la zona se encuentra que existe.
+\end{enumerate}
+}
+
+Usa subsecciones para separar y agrupar los casoso por  operaciones (CREATE, GET, GET único, etc).
+Las precondiciones en lugar de separar por comas, se deben separar en itemize. Sigue la estructura de mapeo: 
+- El identificador es el CP y los números
+- Precondiciones va en Precondiciones
+- En datos de entrada o pasos, coloca la entrada.
+- En resultado esperado, traduce los "Verificar"

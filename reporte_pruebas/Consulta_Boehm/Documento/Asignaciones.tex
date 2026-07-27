@@ -1,0 +1,247 @@
+\section{Asignaciones}
+\subsection{Crear Asignación}
+
+\casodeprueba{CP1.1}
+{Crear asignación ok}
+{Token JWT con roles suficientes (ASIGNACIONES\_CREATE), usuario existente en gestion-usuarios y vehículo existente en vehiculos-service sin asignación activa.}
+{JSON con userId válido (UUID v4), vehicleId válido (UUID v4) y notas opcionales válidas (POST /asignaciones).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta DTO con datos correctos de la asignación creada.
+    \item Buscar por ID compuesto (userId y vehicleId) para confirmar su existencia.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Crear asignación - Ya existe una asignación activa del vehículo con el mismo usuario}
+{Token JWT con roles suficientes y una asignación activa ya creada entre el usuario y el vehículo.}
+{JSON con el mismo userId y vehicleId de la asignación activa existente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando conflicto o que ya existe una asignación activa para el usuario y el vehículo.
+\end{enumerate}}
+
+\casodeprueba{CP1.3}
+{Crear asignación - Ya existe asignación activa con otro usuario}
+{Token JWT con roles suficientes y el vehículo ya tiene una asignación activa con otro usuario diferente.}
+{JSON con un nuevo userId y el vehicleId que ya está asignado activamente a otro propietario.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que el vehículo ya está asignado activamente a otro usuario.
+\end{enumerate}}
+
+\casodeprueba{CP1.4}
+{Crear asignación - Ya existe una asignación inactiva con el mismo usuario}
+{Token JWT con roles suficientes y una asignación inactiva (activa = false) previa entre el usuario y el vehículo.}
+{JSON con el mismo userId y vehicleId que poseen un registro inactivo.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que existe una asignación inactiva y sugiriendo usar PATCH para reactivarla.
+\end{enumerate}}
+
+\casodeprueba{CP1.5}
+{Crear asignación - Usuario o vehículo no existe}
+{Token JWT con roles suficientes.}
+{JSON con userId o vehicleId que no existen en sus respectivos microservicios.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error indicando que el usuario o el vehículo no existe.
+\end{enumerate}}
+
+\casodeprueba{CP1.6}
+{Crear asignación - userId inválido (No UUID v4)}
+{Token JWT con roles suficientes.}
+{JSON con userId inválido (ej: '12345', 'no-uuid').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para userId.
+\end{enumerate}}
+
+\casodeprueba{CP1.7}
+{Crear asignación - vehicleId inválido (No UUID v4)}
+{Token JWT con roles suficientes.}
+{JSON con vehicleId inválido (ej: '12345', 'no-uuid').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para vehicleId.
+\end{enumerate}}
+
+\casodeprueba{CP1.8}
+{Crear asignación - Notas muy largas (> 500 caracteres)}
+{Token JWT con roles suficientes.}
+{JSON con notas de más de 500 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para notas.
+\end{enumerate}}
+
+\casodeprueba{CP2.1}
+{Obtener todas las asignaciones ok}
+{Token JWT con roles suficientes (ASIGNACIONES\_READ) y asignaciones creadas en el sistema.}
+{Ninguna (GET /asignaciones)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en el array acorde al total existente.
+\end{enumerate}}
+
+\casodeprueba{CP2.2}
+{Obtener flota de vehículos por propietario ok}
+{Token JWT con roles suficientes (ASIGNACIONES\_READ) y vehículos asignados a un propietario específico.}
+{UUID de propietario como parámetro (GET /asignaciones/propietario/:userId)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos coincidente con la flota del propietario.
+\end{enumerate}}
+
+\casodeprueba{CP2.3}
+{Obtener flota de vehículos por propietario sin resultados}
+{Token JWT con roles suficientes.}
+{UUID de propietario sin vehículos asignados.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 y cantidad de registros 0 (array vacío).
+\end{enumerate}}
+
+\casodeprueba{CP2.4}
+{Obtener flota de vehículos por propietario - userId inválido}
+{Token JWT con roles suficientes.}
+{UUID de propietario con formato inválido (GET /asignaciones/propietario/abc).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación (ParseUUIDPipe).
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Buscar asignación activa por vehículo ok}
+{Token JWT con roles suficientes (ASIGNACIONES\_READ) y una asignación activa asociada a un vehículo.}
+{UUID del vehículo como parámetro (GET /asignaciones/vehiculo/:vehicleId/activo)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden con la asignación activa del vehículo.
+\end{enumerate}}
+
+\casodeprueba{CP3.2}
+{Buscar asignación activa por vehículo - No encontrada}
+{Token JWT con roles suficientes.}
+{UUID de vehículo sin asignación activa.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error indicando que no existe asignación activa para el vehículo.
+\end{enumerate}}
+
+\casodeprueba{CP3.3}
+{Buscar asignación activa por vehículo - vehicleId inválido}
+{Token JWT con roles suficientes.}
+{UUID de vehículo con formato inválido (GET /asignaciones/vehiculo/abc/activo).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación (ParseUUIDPipe).
+\end{enumerate}}
+
+\casodeprueba{CP3.4}
+{Buscar asignación específica por clave compuesta (userId y vehicleId) ok}
+{Token JWT con roles suficientes (ASIGNACIONES\_READ) y una asignación creada con un userId y vehicleId específicos.}
+{UUID de usuario y UUID de vehículo como parámetros (GET /asignaciones/:userId/:vehicleId)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden con la asignación buscada.
+\end{enumerate}}
+
+\casodeprueba{CP3.5}
+{Buscar asignación específica por clave compuesta - No encontrada}
+{Token JWT con roles suficientes.}
+{Combinación de userId y vehicleId inexistente en el sistema.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error indicando que la asignación no fue encontrada.
+\end{enumerate}}
+
+\casodeprueba{CP3.6}
+{Buscar asignación específica por clave compuesta - Parámetros inválidos}
+{Token JWT con roles suficientes.}
+{userId o vehicleId con formato inválido (GET /asignaciones/abc/def).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación (ParseUUIDPipe).
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Actualizar asignación ok}
+{Token JWT con roles suficientes (ASIGNACIONES\_UPDATE) y una asignación creada.}
+{DTO de actualización válido (activa: false, notas: 'Notas actualizadas') y parámetros userId y vehicleId (PATCH /asignaciones/:userId/:vehicleId).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta coinciden con los cambios aplicados.
+    \item Buscar por clave compuesta para confirmar el cambio en la base de datos.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Actualizar asignación - Not Found}
+{Token JWT con roles suficientes.}
+{userId y vehicleId inexistentes y DTO de actualización válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de asignación no encontrada.
+\end{enumerate}}
+
+\casodeprueba{CP4.3}
+{Actualizar asignación - Campo activa inválido (No booleano)}
+{Token JWT con roles suficientes y una asignación creada.}
+{DTO de actualización con `activa` en formato no booleano (ej: 'si' o 1).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el campo activa.
+\end{enumerate}}
+
+\casodeprueba{CP4.4}
+{Actualizar asignación - Notas muy largas (> 500 caracteres)}
+{Token JWT con roles suficientes y una asignación creada.}
+{DTO de actualización con notas de más de 500 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el campo notas.
+\end{enumerate}}
+
+\casodeprueba{CP4.5}
+{Actualizar asignación - Parámetros inválidos (UUID incorrecto)}
+{Token JWT con roles suficientes.}
+{userId o vehicleId con formato inválido en la URL.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación (ParseUUIDPipe).
+\end{enumerate}}
+
+\casodeprueba{CP5.1}
+{Eliminar asignación ok (Baja lógica)}
+{Token JWT con roles suficientes (ASIGNACIONES\_DELETE) y una asignación activa creada.}
+{userId y vehicleId como parámetros (DELETE /asignaciones/:userId/:vehicleId)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Buscar por clave compuesta para confirmar que el estado activa cambió a false.
+\end{enumerate}}
+
+\casodeprueba{CP5.2}
+{Eliminar asignación - Not Found}
+{Token JWT con roles suficientes.}
+{userId y vehicleId inexistentes.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de asignación no encontrada.
+\end{enumerate}}
+
+\casodeprueba{CP5.3}
+{Eliminar asignación - Conflicto (Ya estaba inactiva)}
+{Token JWT con roles suficientes y una asignación previamente dada de baja (activa = false).}
+{userId y vehicleId de la asignación inactiva.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que la asignación ya estaba inactiva.
+\end{enumerate}}
+
+\casodeprueba{CP5.4}
+{Eliminar asignación - Parámetros inválidos (UUID incorrecto)}
+{Token JWT con roles suficientes.}
+{userId o vehicleId con formato inválido en la URL.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación (ParseUUIDPipe).
+\end{enumerate}}
+

@@ -1,0 +1,180 @@
+\section{Gateway}
+\subsection{Módulo de Entradas y Salidas (Gateway)}
+
+\subsection{Consultar Estado de Vehículo por Placa (GET /gateway/vehiculos/:placa)}
+
+\casodeprueba{CP1.1}
+{Consultar vehículo por placa existente ok}
+{Token JWT con roles suficientes y un vehículo registrado en el sistema.}
+{Placa válida existente como parámetro en la URL (GET /gateway/vehiculos/ABC-1234).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item DTO de respuesta con { registrado: true, placa, tipo, clasificacion, estado, activo }.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Consultar vehículo por placa no existente (sin resultados)}
+{Token JWT con roles suficientes.}
+{Placa no registrada en el sistema (GET /gateway/vehiculos/XYZ-9999).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 (diseño de preflight que no lanza 404).
+    \item DTO de respuesta con { registrado: false }.
+\end{enumerate}}
+
+\casodeprueba{CP2.1}
+{Autorizar ingreso ok}
+{Token JWT con roles suficientes, vehículo registrado con estado FUERA, y cupo disponible en ModuloZonas.}
+{JSON con placa válida ({ 'placa': 'ABC-1234' }) en POST /gateway/ingresos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Respuesta DTO con { autorizado: true, vehiculoId, placa, tipo, clasificacion, fechaIngreso }.
+    \item Buscar estado del vehículo para confirmar que ahora se encuentra en estado DENTRO.
+\end{enumerate}}
+
+\casodeprueba{CP2.2}
+{Autorizar ingreso - Vehículo con ingreso activo (Conflicto / Duplicado)}
+{Token JWT con roles suficientes y un vehículo que ya posee un ingreso activo (estado DENTRO).}
+{JSON con la placa del vehículo activo ({ 'placa': 'ABC-1234' }) en POST /gateway/ingresos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que ya tiene un ingreso activo o no hay cupo disponible.
+\end{enumerate}}
+
+\casodeprueba{CP2.3}
+{Autorizar ingreso - Vehículo no encontrado}
+{Token JWT con roles suficientes.}
+{JSON con placa no registrada ({ 'placa': 'ZZZ-9999' }) en POST /gateway/ingresos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de vehículo no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP2.4}
+{Autorizar ingreso - Vehículo bloqueado administrativamente}
+{Token JWT con roles suficientes y un vehículo con activo: false.}
+{JSON con la placa del vehículo bloqueado ({ 'placa': 'ABC-1234' }) en POST /gateway/ingresos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 403
+    \item Mensaje de error de vehículo bloqueado administrativamente.
+\end{enumerate}}
+
+\casodeprueba{CP2.5}
+{Autorizar ingreso - Datos inválidos: Placa vacía o ausente}
+{Token JWT con roles suficientes.}
+{JSON con placa ausente o vacía ({ 'placa': '' }) en POST /gateway/ingresos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación ('La placa es obligatoria para registrar el ingreso').
+\end{enumerate}}
+
+\casodeprueba{CP2.6}
+{Autorizar ingreso - Datos inválidos: Placa con tipo de dato incorrecto (no string)}
+{Token JWT con roles suficientes.}
+{JSON con placa numérica ({ 'placa': 1234 }) en POST /gateway/ingresos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para placa.
+\end{enumerate}}
+
+\casodeprueba{CP2.7}
+{Autorizar ingreso - Datos inválidos: permitirSinValidarCupo con tipo incorrecto (no boolean)}
+{Token JWT con roles suficientes.}
+{JSON con { 'placa': 'ABC-1234', 'permitirSinValidarCupo': 'si' } en POST /gateway/ingresos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para permitirSinValidarCupo.
+\end{enumerate}}
+
+\casodeprueba{CP2.8}
+{Autorizar ingreso - Sin cupo disponible (Modo estricto)}
+{Token JWT con roles suficientes, vehículo válido, sin cupo en ModuloZonas y permitirSinValidarCupo: false.}
+{JSON con { 'placa': 'ABC-1234', 'permitirSinValidarCupo': false } en POST /gateway/ingresos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando falta de cupo.
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Registrar vehículo e ingresar ok}
+{Token JWT con roles suficientes, placa no registrada previamente y cupo disponible en ModuloZonas.}
+{JSON con objeto `vehiculo` válido y datos completos de registro en POST /gateway/ingresos/walk-in.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Respuesta DTO con { autorizado: true, vehiculoId, placa, fechaIngreso }.
+    \item Buscar por placa para confirmar creación del vehículo y estado DENTRO.
+\end{enumerate}}
+
+\casodeprueba{CP3.2}
+{Registrar vehículo e ingresar - Placa duplicada}
+{Token JWT con roles suficientes y un vehículo previamente registrado con la misma placa.}
+{JSON con datos de vehículo que repiten una placa existente en POST /gateway/ingresos/walk-in.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que la placa ya existe.
+\end{enumerate}}
+
+\casodeprueba{CP3.3}
+{Registrar vehículo e ingresar - Datos de vehículo inválidos (DTO vehículo con datos erróneos)}
+{Token JWT con roles suficientes.}
+{JSON con objeto `vehiculo` conteniendo datos inválidos (ej. marca vacía o formato de placa incorrecto) en POST /gateway/ingresos/walk-in.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación de los datos del vehículo.
+    \item Verificar que no se creó ningún registro huérfano en el sistema.
+\end{enumerate}}
+
+\casodeprueba{CP3.4}
+{Registrar vehículo e ingresar - Datos inválidos: permitirSinValidarCupo con tipo incorrecto (no boolean)}
+{Token JWT con roles suficientes.}
+{JSON con vehículo válido y { 'permitirSinValidarCupo': 123 } en POST /gateway/ingresos/walk-in.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para permitirSinValidarCupo.
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Autorizar salida ok}
+{Token JWT con roles suficientes y un vehículo con ingreso activo (estado DENTRO).}
+{JSON con placa válida ({ 'placa': 'ABC-1234' }) en POST /gateway/salidas.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Respuesta DTO con { autorizado: true, vehiculoId, placa, fechaIngreso, fechaSalida }.
+    \item Buscar estado del vehículo para confirmar que cambió a estado FUERA.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Autorizar salida - Vehículo no encontrado}
+{Token JWT con roles suficientes.}
+{JSON con placa no registrada ({ 'placa': 'ZZZ-9999' }) en POST /gateway/salidas.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de vehículo no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP4.3}
+{Autorizar salida - Vehículo sin ingreso activo}
+{Token JWT con roles suficientes y un vehículo registrado cuyo estado actual es FUERA.}
+{JSON con placa válida ({ 'placa': 'ABC-1234' }) en POST /gateway/salidas.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que el vehículo no tiene un ingreso activo.
+\end{enumerate}}
+
+\casodeprueba{CP4.4}
+{Autorizar salida - Datos inválidos: Placa vacía o ausente}
+{Token JWT con roles suficientes.}
+{JSON con placa ausente o vacía ({ 'placa': '' }) en POST /gateway/salidas.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación ('La placa es obligatoria para registrar la salida').
+\end{enumerate}}
+
+\casodeprueba{CP4.5}
+{Autorizar salida - Datos inválidos: Placa con tipo de dato incorrecto (no string)}
+{Token JWT con roles suficientes.}
+{JSON con placa numérica ({ 'placa': 9876 }) en POST /gateway/salidas.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de\_respuesta 400
+    \item Mensaje de error de validación para placa.
+\end{enumerate}}
+

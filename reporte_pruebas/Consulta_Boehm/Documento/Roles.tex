@@ -1,0 +1,207 @@
+\section{Roles}
+\subsection{Módulo de Roles (/roles)}
+
+\subsection{Crear Rol (POST /roles)}
+
+\casodeprueba{CP1.1}
+{Crear rol ok}
+{Token JWT con rol ADMIN o ROOT y permiso ROLES\_CREATE.}
+{JSON con datos válidos { 'name': 'SUPERVISOR', 'description': 'Rol de supervisión de estacionamiento' }.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta con datos correctos del rol creado.
+    \item Buscar por ID (GET /roles/:id) o por nombre (GET /roles/name/:name) para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Crear rol duplicado}
+{Token JWT con permisos suficientes y un rol ya existente con nombre 'ADMIN'.}
+{JSON con el mismo nombre existente { 'name': 'ADMIN', 'description': 'Intento duplicado' }.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que ya existe un rol con ese nombre.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.1}
+{Crear rol - Nombre vacío o ausente}
+{Token JWT con permisos suficientes.}
+{JSON con name vacío ('') o ausente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el nombre del rol es obligatorio.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.2}
+{Crear rol - Nombre no es string}
+{Token JWT con permisos suficientes.}
+{JSON con name numérico (123).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el nombre del rol debe ser texto.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.3}
+{Crear rol - Descripción excede longitud máxima}
+{Token JWT con permisos suficientes.}
+{JSON con description de más de 255 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la descripción no puede tener más de 255 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP2.1}
+{Listar roles ok}
+{Token JWT con rol ADMIN o ROOT y permiso ROLES\_READ, y roles registrados.}
+{Ninguna (GET /roles).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en el array acorde al total existente.
+\end{enumerate}}
+
+\casodeprueba{CP2.2}
+{Listar roles sin resultados}
+{Token JWT con permisos de lectura y base de datos de roles vacía.}
+{Ninguna (GET /roles).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos (0).
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Listar roles disponibles ok}
+{Token JWT con permiso ROLES\_READ y roles activos en el sistema.}
+{Ninguna (GET /roles/available).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Lista de nombres de roles disponibles obtenida correctamente.
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Obtener rol por ID ok}
+{Token JWT con permiso ROLES\_READ y un rol existente.}
+{UUID válido del rol como parámetro (GET /roles/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden con el rol buscado.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Obtener rol por ID not found}
+{Token JWT con permiso ROLES\_READ.}
+{UUID inexistente como parámetro (GET /roles/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de rol no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP4.3}
+{Obtener rol por ID con UUID inválido}
+{Token JWT con permiso ROLES\_READ.}
+{ID con formato no UUID (GET /roles/abc-123).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error por formato de UUID inválido.
+\end{enumerate}}
+
+\casodeprueba{CP5.1}
+{Obtener rol por nombre ok}
+{Token JWT con permiso ROLES\_READ y rol 'ADMIN' existente.}
+{Nombre válido como parámetro (GET /roles/name/ADMIN).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta coinciden con el rol.
+\end{enumerate}}
+
+\casodeprueba{CP5.2}
+{Obtener rol por nombre not found}
+{Token JWT con permiso ROLES\_READ.}
+{Nombre inexistente (GET /roles/name/INEXISTENTE).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de rol no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP6.1}
+{Actualizar rol ok}
+{Token JWT con permiso ROLES\_UPDATE y rol existente.}
+{UUID del rol como parámetro y DTO con datos válidos { 'description': 'Nueva descripción actualizada' }.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item DTO de respuesta con datos actualizados.
+    \item Buscar por ID para confirmar el cambio.
+\end{enumerate}}
+
+\casodeprueba{CP6.2}
+{Actualizar rol not found}
+{Token JWT con permiso ROLES\_UPDATE.}
+{UUID inexistente y DTO válido en PATCH /roles/:id.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de rol no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP6.3}
+{Actualizar rol - Datos inválidos (Descripción muy larga)}
+{Token JWT con permiso ROLES\_UPDATE y rol existente.}
+{DTO con description > 255 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP7.1}
+{Activar rol ok}
+{Token JWT con permiso ROLES\_UPDATE y un rol previamente desactivado.}
+{UUID del rol como parámetro (PATCH /roles/activate/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Rol activado exitosamente.
+\end{enumerate}}
+
+\casodeprueba{CP7.2}
+{Activar rol not found}
+{Token JWT con permiso ROLES\_UPDATE.}
+{UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de rol no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP8.1}
+{Desactivar rol ok}
+{Token JWT con permiso ROLES\_DELETE y rol activo.}
+{UUID del rol como parámetro (PATCH /roles/deactivate/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Rol desactivado exitosamente.
+    \item Buscar por ID para confirmar cambio de estado.
+\end{enumerate}}
+
+\casodeprueba{CP8.2}
+{Desactivar rol not found}
+{Token JWT con permiso ROLES\_DELETE.}
+{UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP9.1}
+{Eliminar rol ok}
+{Token JWT con permiso ROLES\_DELETE y rol existente.}
+{UUID del rol como parámetro (DELETE /roles/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Rol eliminado exitosamente.
+    \item Buscar por ID (GET /roles/:id) para confirmar not found (404).
+\end{enumerate}}
+
+\casodeprueba{CP9.2}
+{Eliminar rol not found}
+{Token JWT con permiso ROLES\_DELETE.}
+{UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+

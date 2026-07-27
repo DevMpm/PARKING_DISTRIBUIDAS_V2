@@ -1,0 +1,213 @@
+\section{Usuarios}
+\subsection{Módulo de Usuarios (/users)}
+
+\subsection{Obtener Usuarios (Múltiples resultados)}
+
+\casodeprueba{CP9.1}
+{Listar usuarios ok}
+{Token JWT con rol ADMIN o ROOT y permiso USUARIOS\_READ, y usuarios registrados.}
+{Ninguna (GET /users) con rol administrador.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en el array acorde al total existente.
+\end{enumerate}}
+
+\casodeprueba{CP9.2}
+{Listar usuarios sin permisos (Forbidden)}
+{Token JWT con rol USER estándar (sin rol ADMIN ni ROOT).}
+{Ninguna (GET /users).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 403
+    \item Mensaje de error indicando que no cuenta con privilegios para listar todos los usuarios.
+\end{enumerate}}
+
+\casodeprueba{CP10.1}
+{Obtener usuario por ID ok}
+{Token JWT de administrador (ADMIN/ROOT) o del propio usuario dueño del ID, con permiso USUARIOS\_READ.}
+{UUID válido del usuario como parámetro (GET /users/:id)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden con el usuario buscado.
+\end{enumerate}}
+
+\casodeprueba{CP10.2}
+{Obtener usuario por ID sin permisos (Forbidden)}
+{Token JWT de un usuario estándar intentando consultar el ID de otro usuario diferente.}
+{UUID ajeno como parámetro en GET /users/:id}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 403
+    \item Mensaje de error indicando que solo puede ver sus propios datos.
+\end{enumerate}}
+
+\casodeprueba{CP10.3}
+{Obtener usuario por ID not found}
+{Token JWT con rol ADMIN/ROOT.}
+{UUID inexistente como parámetro.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de usuario no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP11.1}
+{Obtener usuario por username ok}
+{Token JWT con permisos de lectura y rol ADMIN/ROOT o coincidente con el username consultado.}
+{Username válido como parámetro (GET /users/username/:username)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta coinciden con el usuario.
+\end{enumerate}}
+
+\casodeprueba{CP11.2}
+{Obtener usuario por username sin permisos (Forbidden)}
+{Token JWT de usuario estándar consultando el username de otro usuario.}
+{Username ajeno en GET /users/username/:username}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 403
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP11.3}
+{Obtener usuario por username not found}
+{Token JWT con rol ADMIN/ROOT.}
+{Username inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP12.1}
+{Actualizar usuario ok}
+{Token JWT de ADMIN/ROOT o del propio usuario, con permiso USUARIOS\_UPDATE, y un usuario existente.}
+{UUID del usuario como parámetro y DTO con datos válidos a actualizar.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item DTO de respuesta con datos actualizados.
+    \item Buscar por Id para confirmar el cambio.
+\end{enumerate}}
+
+\casodeprueba{CP12.2}
+{Actualizar usuario sin permisos (Forbidden)}
+{Token JWT de usuario estándar intentando modificar los datos de otro usuario.}
+{UUID ajeno y DTO válido en PATCH /users/:id}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 403
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP12.3}
+{Actualizar usuario not found}
+{Token JWT con rol ADMIN/ROOT.}
+{UUID inexistente y DTO válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP12.4.1}
+{Actualizar usuario - Password vacío o ausente}
+{Token JWT con permisos suficientes y usuario existente.}
+{DTO de actualización con password vacío ('').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la contraseña es obligatoria.
+\end{enumerate}}
+
+\casodeprueba{CP12.4.2}
+{Actualizar usuario - Password muy corta (< 8 caracteres)}
+{Token JWT con permisos suficientes y usuario existente.}
+{DTO de actualización con password de 7 caracteres ('Pass123').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la contraseña debe tener al menos 8 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP12.4.3}
+{Actualizar usuario - Password sin letras (solo números)}
+{Token JWT con permisos suficientes y usuario existente.}
+{DTO de actualización con password numérica ('123456789').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la contraseña debe contener al menos una letra y un número.
+\end{enumerate}}
+
+\casodeprueba{CP12.4.4}
+{Actualizar usuario - Password sin números (solo letras)}
+{Token JWT con permisos suficientes y usuario existente.}
+{DTO de actualización con password solo de letras ('PasswordABC').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la contraseña debe contener al menos una letra y un número.
+\end{enumerate}}
+
+\casodeprueba{CP12.4.5}
+{Actualizar usuario - Username vacío o ausente}
+{Token JWT con permisos suficientes y usuario existente.}
+{DTO de actualización con username vacío.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el nombre de usuario es obligatorio.
+\end{enumerate}}
+
+\casodeprueba{CP12.4.6}
+{Actualizar usuario - Username muy corto (< 3 caracteres)}
+{Token JWT con permisos suficientes y usuario existente.}
+{DTO de actualización con username de 2 caracteres ('ab').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el nombre de usuario debe tener al menos 3 caracteres.
+\end{enumerate}}
+
+\casodeprueba{CP12.4.7}
+{Actualizar usuario - Username con letras mayúsculas o caracteres no permitidos}
+{Token JWT con permisos suficientes y usuario existente.}
+{DTO de actualización con username conteniendo mayúsculas o símbolos prohibidos ('Juan.Perez' o 'juan@perez').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el username.
+\end{enumerate}}
+
+\casodeprueba{CP12.4.8}
+{Actualizar usuario - Fecha last\_login inválida}
+{Token JWT con permisos suficientes y usuario existente.}
+{DTO con last\_login con formato de fecha inválido ('fecha-invalida').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que last\_login debe ser una fecha válida.
+\end{enumerate}}
+
+\casodeprueba{CP13.1}
+{Activar usuario ok}
+{Token JWT con rol y permisos suficientes, y usuario previamente desactivado.}
+{UUID del usuario como parámetro (PATCH /users/activate/:id)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Respuesta de éxito y activación confirmada.
+\end{enumerate}}
+
+\casodeprueba{CP13.2}
+{Activar usuario not found}
+{Token JWT con permisos suficientes.}
+{UUID inexistente en PATCH /users/activate/:id}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP14.1}
+{Desactivar usuario ok (Borrado lógico)}
+{Token JWT con rol y permisos suficientes (USUARIOS\_DELETE), y usuario activo.}
+{UUID del usuario como parámetro (PATCH /users/deactivate/:id)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Respuesta de éxito y desactivación confirmada.
+\end{enumerate}}
+
+\casodeprueba{CP14.2}
+{Desactivar usuario not found}
+{Token JWT con permisos suficientes.}
+{UUID inexistente en PATCH /users/deactivate/:id}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+

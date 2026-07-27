@@ -1,0 +1,432 @@
+\section{Vehículos}
+\subsection{Crear Vehículo}
+
+\casodeprueba{CP1.1}
+{Crear vehículo tipo Auto ok}
+{Token JWT con roles suficientes (VEHICULOS\_CREATE)}
+{JSON con tipo 'Auto', idPropietario opcional y datos válidos de Auto (placa ABC-1234, marca Toyota, modelo Corolla, color Rojo, anio 2022, clasificacion Gasolina, numeroPuertas 4, capacidadMaletero 400)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta DTO con datos correctos del auto.
+    \item Buscar por Id para confirmar su existencia.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Crear vehículo tipo Motocicleta ok}
+{Token JWT con roles suficientes (VEHICULOS\_CREATE)}
+{JSON con tipo 'Motocicleta', idPropietario opcional y datos válidos de Motocicleta (placa ABC-123D, marca Honda, modelo CBR, color Negro, anio 2023, clasificacion Gasolina, tipoMoto Deportiva)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta DTO con datos correctos de la motocicleta.
+    \item Buscar por Id para confirmar su existencia.
+\end{enumerate}}
+
+\casodeprueba{CP1.3}
+{Crear vehículo tipo Camioneta ok}
+{Token JWT con roles suficientes (VEHICULOS\_CREATE)}
+{JSON con tipo 'Camioneta', idPropietario opcional y datos válidos de Camioneta (placa ABC-1234, marca Ford, modelo Ranger, color Blanco, anio 2021, clasificacion Diesel, cabina doble, capacidadCarga 800)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta DTO con datos correctos de la camioneta.
+    \item Buscar por Id para confirmar su existencia.
+\end{enumerate}}
+
+\casodeprueba{CP2}
+{Crear vehículo duplicado}
+{Token JWT con roles suficientes y un vehículo previamente creado con la placa 'ABC-1234'.}
+{JSON con los mismos datos y placa duplicada 'ABC-1234'.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando conflicto o placa existente.
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Crear vehículo - Placa base inválida (Formato incorrecto)}
+{Token JWT con roles suficientes}
+{JSON con placa inválida (ej: '123-ABCD', 'AB-123', 'ABC1234').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para la placa.
+\end{enumerate}}
+
+\casodeprueba{CP3.2}
+{Crear vehículo - Marca vacía o ausente}
+{Token JWT con roles suficientes}
+{JSON con marca omitida o string vacío `''`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para la marca.
+\end{enumerate}}
+
+\casodeprueba{CP3.3}
+{Crear vehículo - Marca muy corta (< 2 caracteres)}
+{Token JWT con roles suficientes}
+{JSON con marca `'A'`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para la marca.
+\end{enumerate}}
+
+\casodeprueba{CP3.4}
+{Crear vehículo - Marca muy larga (> 30 caracteres)}
+{Token JWT con roles suficientes}
+{JSON con marca de 31 caracteres alfabéticos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para la marca.
+\end{enumerate}}
+
+\casodeprueba{CP3.5}
+{Crear vehículo - Marca con caracteres no permitidos (números o símbolos)}
+{Token JWT con roles suficientes}
+{JSON con marca `'Toyota123'` o `'Toyota!'`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para la marca.
+\end{enumerate}}
+
+\casodeprueba{CP3.6}
+{Crear vehículo - Modelo vacío o ausente}
+{Token JWT con roles suficientes}
+{JSON con modelo omitido o string vacío `''`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el modelo.
+\end{enumerate}}
+
+\casodeprueba{CP3.7}
+{Crear vehículo - Modelo muy corto (< 3 caracteres)}
+{Token JWT con roles suficientes}
+{JSON con modelo `'AB'`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el modelo.
+\end{enumerate}}
+
+\casodeprueba{CP3.8}
+{Crear vehículo - Modelo muy largo (> 107 caracteres)}
+{Token JWT con roles suficientes}
+{JSON con modelo de 108 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el modelo.
+\end{enumerate}}
+
+\casodeprueba{CP3.9}
+{Crear vehículo - Color vacío o inválido (< 3 caracteres o símbolos)}
+{Token JWT con roles suficientes}
+{JSON con color `'Ro'` o `'Rojo123'`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el color.
+\end{enumerate}}
+
+\casodeprueba{CP3.10}
+{Crear vehículo - Año menor al permitido (< 1885)}
+{Token JWT con roles suficientes}
+{JSON con año `1884`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el año.
+\end{enumerate}}
+
+\casodeprueba{CP3.11}
+{Crear vehículo - Año futuro mayor al actual}
+{Token JWT con roles suficientes}
+{JSON con año `2035`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para el año.
+\end{enumerate}}
+
+\casodeprueba{CP3.12}
+{Crear vehículo - Clasificación inválida o fuera de enum}
+{Token JWT con roles suficientes}
+{JSON con clasificacion `'Nuclear'`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para la clasificación.
+\end{enumerate}}
+
+\casodeprueba{CP3.13}
+{Crear vehículo Auto - Número de puertas menor al mínimo (< 2)}
+{Token JWT con roles suficientes}
+{JSON con tipo 'Auto' y numeroPuertas `1`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para numeroPuertas.
+\end{enumerate}}
+
+\casodeprueba{CP3.14}
+{Crear vehículo Auto - Número de puertas mayor al máximo (> 5)}
+{Token JWT con roles suficientes}
+{JSON con tipo 'Auto' y numeroPuertas `6`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para numeroPuertas.
+\end{enumerate}}
+
+\casodeprueba{CP3.15}
+{Crear vehículo Auto - Capacidad de maletero menor al mínimo (< 150)}
+{Token JWT con roles suficientes}
+{JSON con tipo 'Auto' y capacidadMaletero `100`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para capacidadMaletero.
+\end{enumerate}}
+
+\casodeprueba{CP3.16}
+{Crear vehículo Auto - Capacidad de maletero mayor al máximo (> 800)}
+{Token JWT con roles suficientes}
+{JSON con tipo 'Auto' y capacidadMaletero `900`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para capacidadMaletero.
+\end{enumerate}}
+
+\casodeprueba{CP3.17}
+{Crear vehículo Motocicleta - Placa de moto con formato inválido}
+{Token JWT con roles suficientes}
+{JSON con tipo 'Motocicleta' y placa `'ABC-1234'` (formato de auto en lugar de `ABC-123D`).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para la placa de motocicleta.
+\end{enumerate}}
+
+\casodeprueba{CP3.18}
+{Crear vehículo Motocicleta - Tipo de moto inválido o fuera de enum}
+{Token JWT con roles suficientes}
+{JSON con tipo 'Motocicleta' y tipoMoto `'Chopper'`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para tipoMoto.
+\end{enumerate}}
+
+\casodeprueba{CP3.19}
+{Crear vehículo Camioneta - Cabina inválida (distinta de 'simple' o 'doble')}
+{Token JWT con roles suficientes}
+{JSON con tipo 'Camioneta' y cabina `'extrahumana'`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para cabina.
+\end{enumerate}}
+
+\casodeprueba{CP3.20}
+{Crear vehículo Camioneta - Capacidad de carga menor al mínimo (< 450)}
+{Token JWT con roles suficientes}
+{JSON con tipo 'Camioneta' y capacidadCarga `300`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para capacidadCarga.
+\end{enumerate}}
+
+\casodeprueba{CP3.21}
+{Crear vehículo Camioneta - Capacidad de carga mayor al máximo (> 1360)}
+{Token JWT con roles suficientes}
+{JSON con tipo 'Camioneta' y capacidadCarga `1500`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación para capacidadCarga.
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Obtener todos los vehículos ok}
+{Token JWT con roles suficientes (VEHICULOS\_READ) y vehículos creados en el sistema.}
+{Ninguna (GET /vehiculos)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en el array acorde al total existente.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Obtener vehículos por ID de propietario ok}
+{Token JWT con roles suficientes y vehículos asociados a un idPropietario específico.}
+{UUID de propietario como parámetro (GET /vehiculos/propietario/:idPropietario)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos coincidente con las asignaciones del propietario.
+\end{enumerate}}
+
+\casodeprueba{CP4.3}
+{Obtener vehículos por ID de propietario sin resultados}
+{Token JWT con roles suficientes}
+{UUID de propietario sin vehículos asociados.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 y cantidad de registros 0 (array vacío).
+\end{enumerate}}
+
+\casodeprueba{CP5.1}
+{Buscar vehículo por ID ok}
+{Token JWT con roles suficientes y un vehículo creado con UUID válido.}
+{UUID del vehículo como parámetro (GET /vehiculos/:id)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden exactamente con el vehículo buscado.
+\end{enumerate}}
+
+\casodeprueba{CP5.2}
+{Buscar vehículo por ID no existente}
+{Token JWT con roles suficientes}
+{UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de vehículo no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP5.3}
+{Buscar vehículo por placa ok}
+{Token JWT con roles suficientes y un vehículo creado con placa conocida.}
+{Placa como parámetro (GET /vehiculos/placa/:placa)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden con el vehículo de esa placa.
+\end{enumerate}}
+
+\casodeprueba{CP5.4}
+{Buscar vehículo por placa no existente}
+{Token JWT con roles suficientes}
+{Placa no registrada en el sistema.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de vehículo no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP6.1}
+{Actualizar vehículo Auto ok}
+{Token JWT con roles suficientes (VEHICULOS\_UPDATE) y un Auto creado.}
+{DTO de actualización válido para Auto (numeroPuertas: 2, capacidadMaletero: 500, idPropietario: UUID válido). UUID del auto como parámetro (PATCH /vehiculos/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta coinciden con los cambios aplicados.
+    \item Buscar por Id para confirmar el cambio en la base de datos.
+\end{enumerate}}
+
+\casodeprueba{CP6.2}
+{Actualizar vehículo Motocicleta ok}
+{Token JWT con roles suficientes (VEHICULOS\_UPDATE) y una Motocicleta creada.}
+{DTO de actualización válido para Motocicleta (tipoMoto: 'Scooter'). UUID de la moto como parámetro (PATCH /vehiculos/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta coinciden con los cambios aplicados.
+    \item Buscar por Id para confirmar el cambio.
+\end{enumerate}}
+
+\casodeprueba{CP6.3}
+{Actualizar vehículo Camioneta ok}
+{Token JWT con roles suficientes (VEHICULOS\_UPDATE) y una Camioneta creada.}
+{DTO de actualización válido para Camioneta (cabina: 'simple', capacidadCarga: 900). UUID de la camioneta como parámetro (PATCH /vehiculos/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta coinciden con los cambios aplicados.
+    \item Buscar por Id para confirmar el cambio.
+\end{enumerate}}
+
+\casodeprueba{CP6.4}
+{Actualizar vehículo - Not Found}
+{Token JWT con roles suficientes}
+{UUID inexistente y DTO de actualización válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP6.5}
+{Actualizar vehículo - Intento de modificar placa (Inmutable)}
+{Token JWT con roles suficientes y un vehículo creado.}
+{DTO de actualización intentando enviar el campo `placa`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que la placa no se puede modificar.
+\end{enumerate}}
+
+\casodeprueba{CP6.6}
+{Actualizar vehículo - Intento de modificar marca, modelo o año (Inmutables)}
+{Token JWT con roles suficientes y un vehículo creado.}
+{DTO de actualización intentando enviar `marca`, `modelo` o `anio`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que dichos campos no se pueden modificar.
+\end{enumerate}}
+
+\casodeprueba{CP6.7}
+{Actualizar vehículo Auto - Número de puertas inválido (< 2 o > 5)}
+{Token JWT con roles suficientes y un Auto creado.}
+{DTO de actualización con numeroPuertas `6`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP6.8}
+{Actualizar vehículo Auto - Capacidad de maletero inválida (< 150 o > 800)}
+{Token JWT con roles suficientes y un Auto creado.}
+{DTO de actualización con capacidadMaletero `50`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP6.9}
+{Actualizar vehículo Motocicleta - Tipo de moto inválido}
+{Token JWT con roles suficientes y una Motocicleta creada.}
+{DTO de actualización con tipoMoto `'Invalido'`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP6.10}
+{Actualizar vehículo Camioneta - Cabina inválida}
+{Token JWT con roles suficientes y una Camioneta creada.}
+{DTO de actualización con cabina `'triple'`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP6.11}
+{Actualizar vehículo Camioneta - Capacidad de carga inválida}
+{Token JWT con roles suficientes y una Camioneta creada.}
+{DTO de actualización con capacidadCarga `2000`.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP7.1}
+{Eliminar vehículo ok (Baja lógica)}
+{Token JWT con roles suficientes (VEHICULOS\_DELETE) y un vehículo creado.}
+{UUID del vehículo como parámetro (DELETE /vehiculos/:id)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Buscar por Id para confirmar que el estado activo cambió a false (baja lógica).
+\end{enumerate}}
+
+\casodeprueba{CP7.2}
+{Eliminar vehículo - Not Found}
+{Token JWT con roles suficientes}
+{UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP8.1}
+{Reactivar vehículo ok}
+{Token JWT con roles suficientes (VEHICULOS\_UPDATE) y un vehículo previamente dado de baja (activo = false).}
+{UUID como parámetro y opcional idPropietario en el body (PATCH /vehiculos/:id/reactivar)}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta con activo = true.
+    \item Buscar por Id para confirmar reactivación.
+\end{enumerate}}
+
+\casodeprueba{CP8.2}
+{Reactivar vehículo - Not Found}
+{Token JWT con roles suficientes}
+{UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+

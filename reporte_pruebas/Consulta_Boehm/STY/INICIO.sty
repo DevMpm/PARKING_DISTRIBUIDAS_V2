@@ -1,0 +1,207 @@
+%\ProvidesPackage{EPN}
+%%%%%%%%%%%%%%%%%%%%%%% Paquetes %%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{amsmath}
+\usepackage{soul}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{tabularx}
+%\PassOptionsToPackage{table,svgnames,xcdraw}{xcolor}
+\usepackage{color}
+\usepackage{subfigure}
+\usepackage{capt-of}
+\usepackage{sidecap}
+\sidecaptionvpos{figure}{c}
+\usepackage{caption}
+\usepackage{url}
+\usepackage{commath}
+\usepackage{cancel}
+\usepackage{anysize}
+\usepackage{csquotes}
+\usepackage{tcolorbox}
+\usepackage{lipsum}
+\usepackage{answers}
+\usepackage{nccmath}
+\usepackage[shortlabels]{enumitem}
+\usepackage[acronym,toc]{glossaries}
+\captionsetup[table]{position=top}
+%\usepackage{filecontents}
+\tcbuselibrary{skins,breakable}
+\usetikzlibrary{shadings,shadows}
+\usepackage{mathtools, amsfonts, amssymb, amsthm}
+\usepackage{makeidx}
+\usepackage{float,graphicx}
+\usepackage{lmodern}
+\usepackage{textcomp,gensymb}
+\usepackage{nccmath}
+\usepackage{tikz}
+\usepackage{newclude}
+%\geometry{a4paper, total={6in, 9in}}
+
+\setcounter{secnumdepth}{4}
+
+%-_-_-_-_-_-_-_-_-_-
+%=================== Márgenes ===================
+\marginsize{2cm}{2cm}{2cm}{2cm} % Izquierda, derecha, arriba, abajo
+%=================== Insertar PDFs ===================
+\usepackage{pdfpages} 
+%=================== Estilo de Bibliografía ===================
+%\usepackage[backend=bibtex,style=ieee]{biblatex}
+\usepackage{biblatex}
+\addbibresource{Bibliografia.bib}
+%=================== Apéndices ===================
+\usepackage{appendix}
+\renewcommand{\appendixname}{Apéndices}
+\renewcommand{\appendixtocname}{Apéndices}
+\renewcommand{\appendixpagename}{Apéndices} 
+%=================== Hipervínculos ===================
+\usepackage[colorlinks=true,plainpages=false,citecolor=black,linkcolor=black]{hyperref}
+\usepackage{labelschanged}
+\usepackage{hyperref} 
+\usepackage{changepage}
+%===================  Encabezado y Pie de Página ===================
+\usepackage{fancyhdr} 
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize UFA-ESPE}
+\fancyhead[R]{\footnotesize Ingeniería en Software}
+\fancyfoot[R]{\footnotesize \@asignatura}
+\fancyfoot[C]{\thepage}
+\fancyfoot[L]{\footnotesize \@carrera}
+\renewcommand{\footrulewidth}{0.4pt}
+
+%-_-_-_-_-_-_-_-_-_- Para introducir código con minted-_-_-_-_-_-_-_-_-_-
+\usepackage[newfloat]{minted}
+\usemintedstyle{manni} 
+\usepackage{caption}
+%-_-_-_-_-_-_-_-_-_- Para introducir código C con listings-_-_-_-_-_-_-_-_-_-
+\usepackage{listings}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5} 
+\lstset{language=C,
+   keywords={break,case,catch,continue,else,else if,goto,for, default, if,return,switch,do,while,typedef,sizeof},
+   basicstyle=\ttfamily,
+   keywordstyle=\color{blue},
+   commentstyle=\color{red},
+   stringstyle=\color{dkgreen},
+   numbers=left,
+   numberstyle=\tiny\color{gray},
+   stepnumber=1,
+   numbersep=10pt,
+   backgroundcolor=\color{white},
+   tabsize=4,
+   showspaces=false,
+   showstringspaces=false}
+%=================== Del Inglés al Español ===================
+\newcommand{\sen}{\operatorname{\sen}}	% Definimos el comando \sen para el seno
+%en español
+\newcommand{\asignatura}[1]{
+  \def\@asignatura{#1}
+}
+\newcommand{\carrera}[1]{
+  \def\@carrera{#1}
+}
+\newcommand{\titulo}[1]{
+  \def\@titulo{#1}
+}
+\newcommand{\grupo}[1]{
+  \def\@grupo{#1}
+}
+\newcommand{\profesor}[1]{
+  \def\@profesor{#1}
+}
+\newcommand{\alumno}[1]{
+  \def\@alumno{#1}
+}
+
+% =================== Función Casos de Prueba ===================
+\definecolor{HeaderColor}{RGB}{180, 198, 231}
+
+\newcommand{\casodeprueba}[5]{
+    \begingroup
+    \renewcommand{\arraystretch}{1.8} % Altura de las filas para que no se vea amontonado
+    \noindent
+    \begin{tabularx}{0.9\textwidth}{|>{\columncolor{HeaderColor}\bfseries\raggedright\arraybackslash}p{4.5cm}|X|}
+    \hline
+    IDENTIFICADOR & #1 \\ \hline
+    DESCRIPCIÓN & #2 \\ \hline
+    PRECONDICIONES & #3 \\ \hline
+    DATOS DE ENTRADA/PASOS & #4 \\ \hline
+    RESULTADO ESPERADO & #5 \\ \hline
+    \end{tabularx}
+    \endgroup
+    \vspace{1cm}
+}
+
+
+%=================== Portada ===================
+\newcommand*{\maketitlepage}
+ {\begingroup
+  \begin{center}			
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}	
+\begin{minipage}{\textwidth} 
+\begin{center}
+\includegraphics[scale = 0.5]{Imagenes/Logo_ESPEOk.png}
+\end{center}
+\end{minipage}
+\\
+
+
+\vspace*{0.5cm}
+\textsc{\huge Universidad De Las Fuerzas Armadas \vspace{10px} \\- ESPE }\\[1cm]	
+\textsc{\LARGE Departamento De Ciencias De La \vspace{5px} \\ Computación}\\[1cm]
+
+%=================== Nombre de la Asignatura ===================
+\begin{minipage}{0.9\textwidth} 
+\begin{center}																	
+\textsc{\LARGE \@asignatura}
+\end{center}
+\end{minipage}\\[0.1cm]
+%=================== Nombre de la Tarea ===================
+ 			\vspace*{0.5cm}	
+\HRule \\[0.4cm]																
+{ \huge \bfseries\@titulo}\\[0.4cm]
+\HRule \\[0.4cm]
+
+%=================== Profesor ===================
+\begin{minipage}{0.96\textwidth}		
+\vspace{0.6cm}
+\begin{center} \large														
+\emph{Docente:} \\							
+\@profesor\\
+\end{center}
+\end{minipage}
+
+\vspace*{1cm}	
+
+%=================== Integrantes ===================
+\begin{minipage}{0.96\textwidth}	
+\begin{center} \large
+%\raggedright
+\emph{Estudiante:}\\
+\@alumno\\
+			\vspace*{0.5cm}	
+\end{center}	
+\end{minipage}		
+
+%=================== Equipo, Grupo ===================
+\begin{minipage}{0.96\textwidth}		
+%\vspace{0.6cm}
+\begin{center} \large										
+%\vspace*{0.5cm}
+ 		\center{\textbf{\Large \@grupo}	}\\
+    \vspace{0.5cm} 					
+\end{center}
+\end{minipage}	
+																
+%=================== Fecha del trabajo ===================
+\begin{center}
+{\large \today}
+ 			\end{center}			
+\end{center}							 						
+  \endgroup}

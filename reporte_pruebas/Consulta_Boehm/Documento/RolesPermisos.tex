@@ -1,0 +1,114 @@
+\section{Roles y Permisos}
+\subsection{Módulo de Role-Permissions (/roles/:roleId/permissions/:permissionId)}
+
+\subsection{Asignar Permiso a Rol (POST /roles/:roleId/permissions/:permissionId)}
+
+\casodeprueba{CP1.1}
+{Asignar permiso a rol ok}
+{Token JWT con permiso ROLES\_UPDATE, rol existente y permiso existente no asignados previamente.}
+{roleId (UUID) y permissionId (UUID) válidos como parámetros de ruta.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Confirmación de asignación exitosa.
+    \item Consultar permisos del rol (GET /roles/:roleId/permissions) para verificar que el permiso está incluido.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Asignar permiso a rol duplicado (Ya asignado)}
+{Token JWT con permisos suficientes y relación roleId-permissionId ya existente.}
+{Mismos roleId y permissionId válidos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409 (o 400 según manejo de duplicados)
+    \item Mensaje de error indicando que la asignación ya existe.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.1}
+{Asignar permiso - Rol not found}
+{Token JWT con permisos suficientes y permissionId válido.}
+{roleId UUID inexistente y permissionId válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de rol no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.2}
+{Asignar permiso - Permiso not found}
+{Token JWT con permisos suficientes y roleId válido.}
+{roleId válido y permissionId UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de permiso no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.3}
+{Asignar permiso - UUID inválido en parámetros}
+{Token JWT con permisos suficientes.}
+{roleId o permissionId con formato no UUID (ej. 'abc', '123').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error por formato de UUID inválido.
+\end{enumerate}}
+
+\casodeprueba{CP2.1}
+{Remover permiso de rol ok}
+{Token JWT con permiso ROLES\_UPDATE y relación roleId-permissionId existente.}
+{roleId y permissionId válidos como parámetros.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Confirmación de remoción exitosa.
+    \item Consultar permisos del rol (GET /roles/:roleId/permissions) para confirmar que ya no aparece.
+\end{enumerate}}
+
+\casodeprueba{CP2.2}
+{Remover permiso de rol not found (No asignado)}
+{Token JWT con permisos suficientes.}
+{roleId y permissionId válidos pero sin asignación previa entre ellos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error indicando que la asignación no existe.
+\end{enumerate}}
+
+\casodeprueba{CP2.3}
+{Remover permiso - UUID inválido}
+{Token JWT con permisos suficientes.}
+{Parámetros con formato UUID inválido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Listar permisos de rol ok}
+{Token JWT con permiso ROLES\_READ, rol existente con permisos asignados.}
+{roleId válido como parámetro de ruta.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de permisos obtenidos en la consulta asociados al rol.
+\end{enumerate}}
+
+\casodeprueba{CP3.2}
+{Listar permisos de rol sin resultados (Rol sin permisos)}
+{Token JWT con permiso ROLES\_READ y rol existente sin permisos asignados.}
+{roleId válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200 (o 404 según diseño) y cantidad de registros (0).
+\end{enumerate}}
+
+\casodeprueba{CP3.3}
+{Listar permisos de rol - Rol not found}
+{Token JWT con permiso ROLES\_READ.}
+{roleId UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de rol no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP3.4}
+{Listar permisos de rol - UUID inválido}
+{Token JWT con permiso ROLES\_READ.}
+{roleId con formato no UUID.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error.
+\end{enumerate}}
+

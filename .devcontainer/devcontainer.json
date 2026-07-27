@@ -1,0 +1,36 @@
+{
+  "name": "Dev Environment (Universal + LaTeX)",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+
+  "postCreateCommand": "sudo apt-get update || true; sudo apt-get install -y texlive-full latexmk; npm install -g opencode-ai",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "James-Yu.latex-workshop"
+      ],
+      "settings": {
+        "latex-workshop.latex.recipes": [
+          {
+            "name": "latexmk",
+            "tools": ["latexmk"]
+          }
+        ],
+        "latex-workshop.latex.tools": [
+          {
+            "name": "latexmk",
+            "command": "latexmk",
+            "args": [
+              "-synctex=1",
+              "-interaction=nonstopmode",
+              "-file-line-error",
+              "-pdf",
+              "%DOC%"
+            ]
+          }
+        ],
+        "latex-workshop.view.pdf.viewer": "tab"
+      }
+    }
+  }
+}

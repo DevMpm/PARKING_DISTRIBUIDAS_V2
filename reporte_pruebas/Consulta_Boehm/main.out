@@ -1,0 +1,34 @@
+\BOOKMARK [1][-]{section.1}{Zonas}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Crear Zona}{section.1}% 2
+\BOOKMARK [1][-]{section.2}{Espacios}{}% 3
+\BOOKMARK [1][-]{section.3}{Veh\355culos}{}% 4
+\BOOKMARK [2][-]{subsection.3.1}{Crear Veh\355culo}{section.3}% 5
+\BOOKMARK [1][-]{section.4}{Personas}{}% 6
+\BOOKMARK [2][-]{subsection.4.1}{M\363dulo de Personas \(/personas\)}{section.4}% 7
+\BOOKMARK [2][-]{subsection.4.2}{Operaci\363n Create \(POST /personas\)}{section.4}% 8
+\BOOKMARK [1][-]{section.5}{Usuarios}{}% 9
+\BOOKMARK [2][-]{subsection.5.1}{M\363dulo de Usuarios \(/users\)}{section.5}% 10
+\BOOKMARK [2][-]{subsection.5.2}{Obtener Usuarios \(M\372ltiples resultados\)}{section.5}% 11
+\BOOKMARK [1][-]{section.6}{Roles}{}% 12
+\BOOKMARK [2][-]{subsection.6.1}{M\363dulo de Roles \(/roles\)}{section.6}% 13
+\BOOKMARK [2][-]{subsection.6.2}{Crear Rol \(POST /roles\)}{section.6}% 14
+\BOOKMARK [1][-]{section.7}{Roles y Usuarios}{}% 15
+\BOOKMARK [2][-]{subsection.7.1}{M\363dulo de Role-Users \(/roleusers\)}{section.7}% 16
+\BOOKMARK [2][-]{subsection.7.2}{Asignar Rol a Usuario \(POST /roleusers\)}{section.7}% 17
+\BOOKMARK [1][-]{section.8}{Permisos}{}% 18
+\BOOKMARK [2][-]{subsection.8.1}{M\363dulo de Permisos \(/permissions\)}{section.8}% 19
+\BOOKMARK [2][-]{subsection.8.2}{Crear Permiso \(POST /permissions\)}{section.8}% 20
+\BOOKMARK [1][-]{section.9}{Roles y Permisos}{}% 21
+\BOOKMARK [2][-]{subsection.9.1}{M\363dulo de Role-Permissions \(/roles/:roleId/permissions/:permissionId\)}{section.9}% 22
+\BOOKMARK [2][-]{subsection.9.2}{Asignar Permiso a Rol \(POST /roles/:roleId/permissions/:permissionId\)}{section.9}% 23
+\BOOKMARK [1][-]{section.10}{Gateway}{}% 24
+\BOOKMARK [2][-]{subsection.10.1}{M\363dulo de Entradas y Salidas \(Gateway\)}{section.10}% 25
+\BOOKMARK [2][-]{subsection.10.2}{Consultar Estado de Veh\355culo por Placa \(GET /gateway/vehiculos/:placa\)}{section.10}% 26
+\BOOKMARK [1][-]{section.11}{Asignaciones}{}% 27
+\BOOKMARK [2][-]{subsection.11.1}{Crear Asignaci\363n}{section.11}% 28
+\BOOKMARK [1][-]{section.12}{Tickets}{}% 29
+\BOOKMARK [2][-]{subsection.12.1}{M\363dulo de Tickets \(/tickets\)}{section.12}% 30
+\BOOKMARK [2][-]{subsection.12.2}{Crear Ticket \(POST /tickets/\)}{section.12}% 31
+\BOOKMARK [1][-]{section.13}{Auditor\355a}{}% 32
+\BOOKMARK [2][-]{subsection.13.1}{M\363dulo de Auditor\355a \(/audit\)}{section.13}% 33
+\BOOKMARK [2][-]{subsection.13.2}{Endpoints / Operaciones Create \(POST /audit\)}{section.13}% 34

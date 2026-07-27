@@ -1,0 +1,305 @@
+\section{Espacios}
+\casodeprueba{CP1}
+{Obtener espacios}
+{Token JWT con roles suficientes y 1 zona creada con 5 espacios.}
+{Ninguna}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item Cantidad de resultados del array.
+\end{enumerate}}
+
+\casodeprueba{CP2.1}
+{Obtener espacios por id ok}
+{Token JWT con roles suficientes y 1 zona creada con 2 espacios.}
+{UUID del espacio buscado}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item DTO de respuesta con id y código correcto.
+\end{enumerate}}
+
+\casodeprueba{CP2.2}
+{Obtener espacios por id no existente}
+{Token JWT con roles suficientes y 1 zona creada con 1 espacio.}
+{UUID inexistente}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 404
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Crear espacio ok}
+{Token JWT con roles suficientes y 1 zona creada.}
+{Datos correctos de espacio según el DTO}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 201
+    \item DTO de respuesta con datos correctos.
+    \item Buscar por Id y comprobar que realmente existe el espacio.
+\end{enumerate}}
+
+\casodeprueba{CP3.2}
+{Crear espacio - zona inexistente}
+{Token JWT con roles suficientes y 1 zona creada.}
+{Datos correctos de espacio según el DTO. Id de zona incorrecto}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 403
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP3.3}
+{Crear espacio - zona sin capacidad}
+{Token JWT con roles suficientes, 1 zona creada con capacidad de 1 espacio, y un espacio creado en esa zona.}
+{Datos correctos de espacio según el DTO. Id de la zona ya ocupada.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 403
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP3.4}
+{Crear espacio - Descripcion inválida}
+{Token JWT con roles suficientes y 1 zona creada.}
+{DTO con descripción inválida.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 400
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP3.5}
+{Crear espacio - Tipo inválido}
+{Token JWT con roles suficientes y 1 zona creada.}
+{DTO con tipo inválido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 400
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP3.6}
+{Crear espacio - Estado inválido}
+{Token JWT con roles suficientes y 1 zona creada.}
+{DTO con estado inválido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 400
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Actualizar espacio ok}
+{Token JWT con roles suficientes y 1 zona creada con un espacio.}
+{DTO update con datos en formato correcto.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 200
+    \item DTO de respuesta con datos cambiados
+    \item Buscar por Id y verificar datos cambiados.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Actualizar espacio inexistente}
+{Token JWT con roles suficientes}
+{Id de espacio incorrecto y DTO válido}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 404
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP4.3}
+{Actualizar con descripión incorrecta}
+{Token JWT con roles suficientes y 1 zona creada con un espacio.}
+{DTO update solo con descripción inválida}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 400
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP4.4}
+{Actualizar con tipo incorrecto}
+{Token JWT con roles suficientes y 1 zona creada con un espacio que no está ocupado.}
+{DTO update solo con tipo inválido}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 400
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP4.5}
+{Actualizar tipo cuando el espacio está ocupado}
+{Token JWT con roles suficientes y 1 zona creada con un espacio que está ocupado.}
+{DTO update solo con tipo válido}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 403
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP4.5}
+{Actualizar con estado incorrecto}
+{Token JWT con roles suficientes y 1 zona creada con un espacio.}
+{DTO update solo con tipo inválido}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Codigo de respuesta 400
+    \item Mensaje de error
+\end{enumerate}}
+
+\casodeprueba{CP5.1}
+{Eliminar espacio ok}
+{Token JWT con roles suficientes y 1 zona creada con un espacio.}
+{Id del espacio como parámetro.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200.
+    \item Buscar el espacio por id y verificar que no se encuentra.
+\end{enumerate}}
+
+\casodeprueba{CP5.2}
+{Eliminar espacio inexistente}
+{Token JWT con roles suficientes}
+{Id de espacio inexistente}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP6.1}
+{Cambio de estado de espacio ok}
+{Token JWT con roles suficientes y 1 zona creada con un espacio.}
+{Id del espacio como parámetro y nuevo estado como body.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200.
+    \item Buscar el espacio por id y verificar el cambio.
+\end{enumerate}}
+
+\casodeprueba{CP6.2}
+{Cambio de estado de espacio inválido}
+{Token JWT con roles suficientes y 1 zona creada con un espacio.}
+{Id del espacio como parámetro y nuevo estado inválido en el body.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404.
+\end{enumerate}}
+
+\casodeprueba{CP6.2}
+{Cambio de estado de espacio - Espacio no encontrado}
+{Token JWT con roles suficientes y 1 zona creada con un espacio.}
+{Id del espacio como parámetro y nuevo estado inválido en el body.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404.
+\end{enumerate}}
+
+\casodeprueba{CP7.1}
+{Obtener espacios por estado ok}
+{Token JWT con roles suficientes, 1 zona creada, y un espacio por estado en esa zona.}
+{Tipo de estado seleccionado al azar.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200.
+    \item Cantidad de resultados de la consulta (array)
+\end{enumerate}}
+
+\casodeprueba{CP7.2}
+{Obtener espacios por estado inválido}
+{Token JWT con roles suficientes, 1 zona creada, y un espacio por estado en esa zona.}
+{Estado inválido}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+\end{enumerate}}
+
+\casodeprueba{CP7.3}
+{Obtener espacios por estado inexistente}
+{Token JWT con roles suficientes, 1 zona creada con un espacio que tenga un estado al azar.}
+{Estado distinto al del espacio existente}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de resultados obtenidos 0
+\end{enumerate}}
+
+\casodeprueba{CP8.1}
+{Obtener espacios por zona y estado ok}
+{Token JWT con roles suficientes, se crea una zona por estado posible que contenga únicamente un espacio con el estado respectivo.}
+{Tipo de estado seleccionado al azar, y el ID de la zona con el espacio de ese estado.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200.
+    \item Cantidad de resultados de la consulta (array)
+\end{enumerate}}
+
+\casodeprueba{CP8.2}
+{Obtener espacios por zona y estado - Datos inválidos}
+{Token JWT con roles suficientes}
+{Estado e id de zona inválidos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP8.3}
+{Obtener espacios por zona y estado sin resultados}
+{Token JWT con roles suficientes, se crea una zona por estado posible que contenga únicamente un espacio con el estado respectivo.}
+{Tipo de estado seleccionado al azar, y el ID de una zona con un espacio que tenga un estado distinto.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200.
+    \item Cantidad de resultados de la consulta 0.
+\end{enumerate}}
+
+\casodeprueba{CP9.1}
+{Obtener espacios por tipo ok}
+{Token JWT con roles suficientes, 1 zona creada, y un espacio por tipo en esa zona.}
+{Tipo de espacio seleccionado al azar.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200.
+    \item Cantidad de resultados de la consulta (array)
+\end{enumerate}}
+
+\casodeprueba{CP9.2}
+{Obtener espacios por tipo inválido}
+{Token JWT con roles suficientes, 1 zona creada, y un espacio por tipo en esa zona.}
+{Tipo inválido}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+\end{enumerate}}
+
+\casodeprueba{CP9.3}
+{Obtener espacios por tipo no existente}
+{Token JWT con roles suficientes, 1 zona creada con un espacio que tenga un tipo al azar.}
+{Tipo distinto al del espacio existente}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de resultados obtenidos 0
+\end{enumerate}}
+
+\casodeprueba{CP10.1}
+{Obtener espacios por zona y tipo ok}
+{Token JWT con roles suficientes, se crea una zona por tipo de espacio posible que contenga únicamente un espacio con el estado respectivo.}
+{Tipo de espacio seleccionado al azar, y el ID de la zona con el espacio de ese tipo}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200.
+    \item Cantidad de resultados de la consulta (array)
+\end{enumerate}}
+
+\casodeprueba{CP10.2}
+{Obtener espacios por zona y tipo- Datos inválidos}
+{Token JWT con roles suficientes}
+{Tipo de espacio, e id de zona inválidos.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP10.3}
+{Obtener espacios por zona y tipo sin resultados}
+{Token JWT con roles suficientes, se crea una zona por tipo de espacio posible que contenga únicamente un espacio con el tipo respectivo.}
+{Tipo de espacio seleccionado al azar, y el ID de una zona con espacio de un tipo distinto.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200.
+    \item Cantidad de resultados de la consulta 0.
+\end{enumerate}}
+
+\casodeprueba{CP11.1}
+{Obtener espacios por zona ok}
+{Token JWT con roles suficientes, se crean 2 zonas, una con 2 espacios y otra con 0.}
+{Id de la zona con 2 espacios.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200.
+    \item Cantidad de resultados de la consulta.
+\end{enumerate}}
+
+\casodeprueba{CP11.2}
+{Obtener espacios por zona nok}
+{Token JWT con roles suficientes, se crean 2 zonas, una con 2 espacios y otra con 0.}
+{Id de zona inválido}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error
+\end{enumerate}}
+

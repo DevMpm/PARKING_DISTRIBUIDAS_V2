@@ -1,0 +1,206 @@
+\section{Roles y Usuarios}
+\subsection{Módulo de Role-Users (/roleusers)}
+
+\subsection{Asignar Rol a Usuario (POST /roleusers)}
+
+\casodeprueba{CP1.1}
+{Asignar rol a usuario ok}
+{Token JWT con permiso ROLEUSERS\_CREATE, usuario existente y rol existente.}
+{JSON con datos válidos { 'id\_user': 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'role\_name': 'ADMIN' }.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta con datos correctos de la asignación creada.
+    \item Buscar asignación específica (GET /roleusers/:id\_user/:id\_role) para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Asignar rol a usuario duplicado}
+{Token JWT con permisos suficientes y asignación ya existente para el usuario y rol.}
+{JSON con id\_user y role\_name ya asignados previamente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que la asignación ya existe.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.1}
+{Asignar rol - id\_user vacío o ausente}
+{Token JWT con permisos suficientes.}
+{JSON con id\_user vacío ('') o ausente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el id de usuario es obligatorio.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.2}
+{Asignar rol - id\_user no es UUID v4 válido}
+{Token JWT con permisos suficientes.}
+{JSON con id\_user de formato inválido (ej. '123-abc').}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que id\_user debe ser un UUID v4 válido.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.3}
+{Asignar rol - role\_name vacío o ausente}
+{Token JWT con permisos suficientes.}
+{JSON con role\_name vacío ('') o ausente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el nombre del rol es obligatorio.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.4}
+{Asignar rol - role\_name no es string}
+{Token JWT con permisos suficientes.}
+{JSON con role\_name numérico (123).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error indicando que el nombre del rol debe ser una cadena de texto.
+\end{enumerate}}
+
+\casodeprueba{CP2.1}
+{Listar asignaciones rol-usuario ok}
+{Token JWT con permiso ROLEUSERS\_READ y asignaciones registradas.}
+{Ninguna (GET /roleusers).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en el array.
+\end{enumerate}}
+
+\casodeprueba{CP2.2}
+{Listar asignaciones sin resultados}
+{Token JWT con permiso ROLEUSERS\_READ y base de datos sin asignaciones.}
+{Ninguna (GET /roleusers).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros (0).
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Obtener roles por usuario ok}
+{Token JWT con permiso ROLEUSERS\_READ y usuario con roles asignados.}
+{UUID válido del usuario como parámetro (GET /roleusers/user/:id\_user).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Asignaciones del usuario obtenidas correctamente.
+\end{enumerate}}
+
+\casodeprueba{CP3.2}
+{Obtener roles por usuario - Usuario not found}
+{Token JWT con permiso ROLEUSERS\_READ.}
+{UUID de usuario inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de usuario no encontrado.
+\end{enumerate}}
+
+\casodeprueba{CP3.3}
+{Obtener roles por usuario - UUID inválido}
+{Token JWT con permiso ROLEUSERS\_READ.}
+{UUID con formato inválido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Obtener usuarios por nombre de rol ok}
+{Token JWT con permiso ROLEUSERS\_READ, rol existente con usuarios asignados.}
+{Nombre del rol como parámetro (GET /roleusers/role/ADMIN).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Lista de usuarios con el rol obtenida correctamente.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Obtener usuarios por rol - Rol not found / sin resultados}
+{Token JWT con permiso ROLEUSERS\_READ.}
+{Nombre de rol inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404 (o 200 con 0 registros)
+    \item Mensaje de error o array vacío.
+\end{enumerate}}
+
+\casodeprueba{CP5.1}
+{Obtener asignación específica ok}
+{Token JWT con permiso ROLEUSERS\_READ y asignación existente.}
+{id\_user (UUID) y id\_role (UUID) como parámetros.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de la respuesta coinciden con la asignación buscada.
+\end{enumerate}}
+
+\casodeprueba{CP5.2}
+{Obtener asignación específica not found}
+{Token JWT con permiso ROLEUSERS\_READ.}
+{id\_user y id\_role válidos pero sin asignación mutua.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error de asignación no encontrada.
+\end{enumerate}}
+
+\casodeprueba{CP5.3}
+{Obtener asignación específica - UUID inválido}
+{Token JWT con permiso ROLEUSERS\_READ.}
+{Parámetros con formato no UUID.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP6.1}
+{Activar asignación ok}
+{Token JWT con permiso ROLEUSERS\_UPDATE y asignación desactivada.}
+{id\_user y id\_role válidos como parámetros.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Asignación activada exitosamente.
+\end{enumerate}}
+
+\casodeprueba{CP6.2}
+{Activar asignación not found}
+{Token JWT con permiso ROLEUSERS\_UPDATE.}
+{IDs sin asignación existente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP7.1}
+{Desactivar asignación ok}
+{Token JWT con permiso ROLEUSERS\_DELETE y asignación activa.}
+{id\_user y id\_role válidos como parámetros.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Asignación desactivada exitosamente.
+    \item Buscar asignación para confirmar cambio de estado.
+\end{enumerate}}
+
+\casodeprueba{CP7.2}
+{Desactivar asignación not found}
+{Token JWT con permiso ROLEUSERS\_DELETE.}
+{IDs sin asignación existente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP8.1}
+{Eliminar asignación ok}
+{Token JWT con permiso ROLEUSERS\_DELETE y asignación existente.}
+{id\_user y id\_role válidos como parámetros.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Asignación eliminada exitosamente.
+    \item Buscar asignación (GET /roleusers/:id\_user/:id\_role) para confirmar not found (404).
+\end{enumerate}}
+
+\casodeprueba{CP8.2}
+{Eliminar asignación not found}
+{Token JWT con permiso ROLEUSERS\_DELETE.}
+{IDs sin asignación existente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+

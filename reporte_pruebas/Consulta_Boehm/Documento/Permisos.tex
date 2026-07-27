@@ -1,0 +1,160 @@
+\section{Permisos}
+\subsection{Módulo de Permisos (/permissions)}
+
+\subsection{Crear Permiso (POST /permissions)}
+
+\casodeprueba{CP1.1}
+{Crear permiso ok}
+{Token JWT con rol ADMIN o ROOT y permiso ROLES\_CREATE.}
+{JSON con datos válidos { 'name': 'ZONAS\_CREATE', 'description': 'Permite crear zonas', 'service': 'zonas-service' }.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 201
+    \item Respuesta con datos correctos del permiso creado.
+    \item Buscar por ID (GET /permissions/:id) para confirmar creación.
+\end{enumerate}}
+
+\casodeprueba{CP1.2}
+{Crear permiso duplicado}
+{Token JWT con permisos suficientes y permiso ya existente 'ZONAS\_CREATE'.}
+{JSON con el mismo nombre { 'name': 'ZONAS\_CREATE', 'description': 'Duplicado' }.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 409
+    \item Mensaje de error indicando que el permiso ya existe.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.1}
+{Crear permiso - Nombre vacío o ausente}
+{Token JWT con permisos suficientes.}
+{JSON con name vacío ('') o ausente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.2}
+{Crear permiso - Nombre excede 100 caracteres}
+{Token JWT con permisos suficientes.}
+{JSON con name de más de 100 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP1.3.3}
+{Crear permiso - Service excede 100 caracteres}
+{Token JWT con permisos suficientes.}
+{JSON con service de más de 100 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP2.1}
+{Listar permisos ok}
+{Token JWT con permiso ROLES\_READ y permisos registrados.}
+{Ninguna (GET /permissions).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros obtenidos en el array.
+\end{enumerate}}
+
+\casodeprueba{CP2.2}
+{Listar permisos sin resultados}
+{Token JWT con permiso ROLES\_READ y base de datos vacía.}
+{Ninguna (GET /permissions).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Cantidad de registros (0).
+\end{enumerate}}
+
+\casodeprueba{CP3.1}
+{Obtener permiso por ID ok}
+{Token JWT con permiso ROLES\_READ y permiso existente.}
+{UUID válido como parámetro (GET /permissions/:id).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Datos de respuesta coinciden con el permiso buscado.
+\end{enumerate}}
+
+\casodeprueba{CP3.2}
+{Obtener permiso por ID not found}
+{Token JWT con permiso ROLES\_READ.}
+{UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP3.3}
+{Obtener permiso con UUID inválido}
+{Token JWT con permiso ROLES\_READ.}
+{ID con formato no UUID.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de formato UUID.
+\end{enumerate}}
+
+\casodeprueba{CP4.1}
+{Actualizar permiso ok}
+{Token JWT con permiso ROLES\_UPDATE y permiso existente.}
+{UUID como parámetro y DTO válido { 'description': 'Descripción actualizada' }.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item DTO con datos actualizados.
+    \item Buscar por ID para confirmar el cambio.
+\end{enumerate}}
+
+\casodeprueba{CP4.2}
+{Actualizar permiso not found}
+{Token JWT con permiso ROLES\_UPDATE.}
+{UUID inexistente y DTO válido.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP4.3}
+{Actualizar permiso - Datos inválidos}
+{Token JWT con permiso ROLES\_UPDATE y permiso existente.}
+{DTO con name de más de 100 caracteres.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 400
+    \item Mensaje de error de validación.
+\end{enumerate}}
+
+\casodeprueba{CP5.1}
+{Activar permiso ok}
+{Token JWT con permiso ROLES\_UPDATE y permiso desactivado.}
+{UUID como parámetro (PATCH /permissions/:id/activate).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Permiso activado exitosamente.
+\end{enumerate}}
+
+\casodeprueba{CP5.2}
+{Activar permiso not found}
+{Token JWT con permiso ROLES\_UPDATE.}
+{UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+
+\casodeprueba{CP6.1}
+{Desactivar permiso ok}
+{Token JWT con permiso ROLES\_DELETE y permiso activo.}
+{UUID como parámetro (PATCH /permissions/:id/deactivate).}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 200
+    \item Permiso desactivado exitosamente.
+\end{enumerate}}
+
+\casodeprueba{CP6.2}
+{Desactivar permiso not found}
+{Token JWT con permiso ROLES\_DELETE.}
+{UUID inexistente.}
+{\begin{enumerate} [leftmargin=*, nosep]
+    \item Código de respuesta 404
+    \item Mensaje de error.
+\end{enumerate}}
+

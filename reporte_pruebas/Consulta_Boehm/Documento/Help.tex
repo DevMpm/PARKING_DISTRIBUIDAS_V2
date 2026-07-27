@@ -1,0 +1,67 @@
+%======================= Introducir codigo ===================
+\begin{listing}[H]
+\begin{minted}{c}
+#include <stdio.h>
+int main() {
+   printf("Hello, World!"); /*printf() outputs the quoted string*/
+   return 0;
+}
+\end{minted}
+\caption{Hello World in C}
+\label{listing:2}
+\end{listing}
+
+
+%======================= Introducir Imagenes ===================
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.25\textwidth]{Imagen.jpg}
+    \caption{Información de la imagen}
+    \label{fig:mesh1}
+\end{figure}
+
+%======================= URL ===================
+\href{http://www.overleaf.com}{Texto  cualquiera}
+\url{http://www.overleaf.com}
+
+%======================= Ecuaciones ===================
+\begin{equation*}
+    G = 4.3\times10^{-6}\units{\frac{Km^2Kpc}{s^2\msol}} \hspace{0.5cm} L = 2^{3.5} = 11.3 \units{\lsol}
+\end{equation*}
+
+%======================= Agregar Tablas =======================
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ |p{3cm}|p{3cm}|p{3cm}|  }
+        \hline
+        \multicolumn{3}{|c|}{Nombre de la tabla} \\%numero de columnas
+        \hline
+        Nombre Columna 1 & Nombre Columna 2 & Nombre Columna 3 \\
+        \hline
+        Afghanistan & AF &AFG \\
+        Aland Islands & AX   & ALA \\
+        Albania &AL & ALB \\
+        Algeria    &DZ & DZA \\
+        American Samoa & AS & ASM \\
+        Andorra & AD & AND   \\
+        Angola & AO & AGO \\
+    \hline
+    \end{tabular}
+    \caption{Caption}
+    \label{tab:my_label}
+\end{table}
+
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l||*{5}{c|}}\hline
+        \backslashbox[48mm]{Room}{Date}%tamanio del slach
+        &\makebox[3em]{5/31}&\makebox[3em]{6/1}&\makebox[3em]{6/2}
+        &\makebox[3em]{6/3}&\makebox[3em]{6/4}\\\hline\hline
+        Meeting Room &&&&&\\\hline
+        Auditorium &&&&&\\\hline
+        Seminar Room &&&&&\\\hline
+    \end{tabular}
+    \caption{Caption}
+    \label{tab:my_label}
+\end{table}
