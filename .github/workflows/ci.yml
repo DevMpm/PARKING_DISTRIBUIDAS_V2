@@ -132,7 +132,10 @@ jobs:
           
       - name: Install E2E Dependencies
         run: pip install requests
-        
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
       - name: Start Docker Compose infrastructure
         run: docker compose up -d --build
         
